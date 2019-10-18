@@ -69,6 +69,37 @@ inputShip :: [Ship] -> Int -> IO Ship
 inputShips :: Int -> [Ship] -> IO [Ship]
 
 -}
+{------------------------------- Validation Functions -------------------------------------}
+
+
+{------------------------------- Print Functions ------------------------------------------}
+
+-- printBoards prints the board state
+printBoards :: [[Int]] -> [[Int]] -> Bool -> IO ()
+
+printBoards aiBoard playerBoard aiBoardVisible =
+  do
+    printBoard aiBoard aiBoardVisible
+    putStrLn("--------------")
+    printBoard playerBoard True
+
+
+-- printBoard prints the state of a singular board
+printBoard :: [[Int]] -> Bool -> IO ()
+printBoard board isShipVisibile = 
+  do
+    if isShipVisibile
+      then do
+        -- TODO display everything properly
+
+    else do
+      -- TODO replace ships with blanks (unless theyre hit)
+      
+
+{------------------------------- Helper Functions -------------------------------------------}
+
+
+{------------------------------- Main Functions -------------------------------------------}
 
 -- play Plays the game
 {-
