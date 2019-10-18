@@ -98,6 +98,17 @@ printBoard board isShipVisibile =
 
 {------------------------------- Helper Functions -------------------------------------------}
 
+-- setUpPlayerBoard
+-- toInt
+-- setUpAIBoard
+
+-- ai function should take in a list of nextMoves and return a new list of next moves based on difficulty
+-- eg: ai difficulty nextMoves
+
+-- getMoves
+-- toCoord
+-- importBoard
+
 
 {------------------------------- Main Functions -------------------------------------------}
 
@@ -106,9 +117,9 @@ printBoard board isShipVisibile =
 Takes the player board, the ai board, the ai (function that generates next moves),
  the ai board visibility and returns an output (current state of the game)
 -}
-play :: [[Int]] -> [[Int]] -> ([Int] -> [Int]) -> Bool -> IO ()
+play :: [[Int]] -> [[Int]] -> Int -> Bool -> [(Int,Int)] -> IO ()
 
-play playerBoard aiBoard ai aiBoardVisible aiNextMoves difficulty =
+play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
   do
     printBoards aiBoard playerBoard aiBoardVisible
     putStrLn("It's your turn, input a coordinate to strike.")
@@ -126,7 +137,13 @@ play playerBoard aiBoard ai aiBoardVisible aiNextMoves difficulty =
         then do
           putStrLn("Sorry, looks like you lost...")
       else do
-        play newPlayerBoard newAIBoard ai aiBoardVisible aiNextMoves difficulty
+        putStrLn("Would you like to save? (y/n)")
+        shouldSave <- getLine
+        if (shouldSave == "Y" || shouldSave == "y")
+          then do
+            save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+        else do
+          play newPlayerBoard newAIBoard ai aiBoardVisible aiNextMoves difficulty
  
 
 
@@ -141,6 +158,7 @@ save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 		putStrLn("What is the name of the file you'd like to save to? (include .csv)")
 		fileName <- getLine
 		writeFile fileName (encodeInputs playerBoard aiBoard difficulty aiBoardVisible aiNextMoves)
+    putStrLn("The game has benn save in "++fileName++".csv")
 		return ()
 
 -- encodeInputs encodes the input into a list of strings
@@ -165,14 +183,12 @@ main =
         		putStrLn("First off lets set up your board")
         		putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
                 playerBoard <- setUpPlayerBoard
-
                 putStrLn("Please choose the AI Difficulty:")
                 putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
-                difficulty <- getLine
-                ai <- getAI difficulty
+                difficulty <- (toInt getLine)
                 aiBoard <- setUpAIBoard
                 aiNextMoves <- getMoves difficulty
-                play playerBoard aiBoard ai aiBoardVisible aiNextMoves difficulty
+                play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
 
         else do -- load game
       		putStrLn("What is your file's name?")
@@ -183,15 +199,14 @@ main =
       		-- second line is the ai's current list of next moves
       		-- after that is 10 lines of AI board state and 10 lines of player board state
       		parsedFile <- [splitsep (==',') line | line <- splitsep (=='\n') file]
-      		difficulty <- toInt ((parsedFile !! 0) !! 0)
-      		aiBoardVisible <- ((parsedFile !! 0) !! 1) == "True"
-      		aiNextMoves <- toCoord (toInt (parsedFile !! 1))
-      		ai <- getAI difficulty
+      		difficulty <- (toInt ((parsedFile !! 0) !! 0))
+      		aiBoardVisible <- (((parsedFile !! 0) !! 1) == "True")
+      		aiNextMoves <- (toCoord (toInt (parsedFile !! 1)))
       		aiData <- slice 2 10 parsedFile
       		playerData <- slice 12 10 parsedFile
       		aiBoard <- importBoard aiData
       		playerBoard <- importBoard playerData
-      		play playerBoard aiBoard ai aiBoardVisible aiNextMoves difficulty
+      		play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
 
 
 
