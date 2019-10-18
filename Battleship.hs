@@ -77,6 +77,27 @@ Takes the player board, the ai board, the ai (function that generates next moves
 -}
 play :: [[Int]] -> [[Int]] -> ([Int] -> [Int]) -> Bool -> IO ()
 
+play playerBoard aiBoard ai aiBoardVisible aiNextMoves difficulty =
+  do
+    printBoards aiBoard playerBoard aiBoardVisible
+    putStrLn("It's your turn, input a coordinate to strike.")
+    playerTarget <- getTarget aiBoard
+    newAIBoard <- updateBoard aiBoard playerTarget
+
+    if (allShipsHit newAIBoard)
+      then do
+        putStrLn("Congratulations you have won the match!!!")
+    else do
+      aiTarget <- -- TODO
+      newPlayerBoard <- updateBoard playerBoard aiTarget
+
+      if (allShipsHit newPlayerBoard)
+        then do
+          putStrLn("Sorry, looks like you lost...")
+      else do
+        play newPlayerBoard newAIBoard ai aiBoardVisible aiNextMoves difficulty
+ 
+
 
 -- save Saves the game a .csv file
 -- first line is [ai difficulty, is aiboard visible]
