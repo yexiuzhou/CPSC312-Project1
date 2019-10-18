@@ -1,3 +1,8 @@
+module Battleship where
+
+import qualified Data.Text.IO  as T
+import           Text.Tabl
+
 type Coordinate = (Char, Int)
 type Ship = [Coordinate]
 type Field = [[Bool]]
@@ -73,10 +78,9 @@ inputShips :: Int -> [Ship] -> IO [Ship]
 
 
 {------------------------------- Print Functions ------------------------------------------}
-
+-- TODO Test the Print Functions
 -- printBoards prints the board state
 printBoards :: [[Int]] -> [[Int]] -> Bool -> IO ()
-
 printBoards aiBoard playerBoard aiBoardVisible =
   do
     printBoard aiBoard aiBoardVisible
@@ -86,15 +90,34 @@ printBoards aiBoard playerBoard aiBoardVisible =
 
 -- printBoard prints the state of a singular board
 printBoard :: [[Int]] -> Bool -> IO ()
-printBoard board isShipVisibile = 
+printBoard board isShipVisibile =
   do
-    if isShipVisibile
-      then do
-        -- TODO display everything properly
+    T.putStrLn $ tabl EnvAscii DecorAll DecorAll [] formatBoard
+    where
+        formattedBoard = formatBoard board isShipVisible
 
-    else do
-      -- TODO replace ships with blanks (unless theyre hit)
-      
+headerRow = [" ":"A":"B":"C":"D":"E":"F":"G":"H":"I":"J"]
+-- formats [[Int]] into [[Text]] to be outputted to console
+formatBoard :: [[Int]] -> Bool -> [[Text]]
+formatBoard board isShipVisible = headerRow :
+                                        ((intToText i):(intListToTextList (board !! (i)) isShipVisible) | i <- [0..9])
+
+-- convert Int to Text
+intToText :: Int -> Text
+intToText i = toEnum i :: Text
+
+-- List of integers to a row of corresponding text characters
+intListToTextList :: [Int] -> Bool -> [Text]
+rowToSymbol row isShipVisible = map (\ i -> getSymbol x isShipVisible) row
+
+-- Integer to a Symbol representing water, ship, miss, hit
+-- only show ship if isShipVisible is true, otherwise show water
+getboardsymbol :: Int -> Bool -> Text
+getboardsymbol i isShipVisible
+    | i == 0    = "~"
+    | i == 1    = if isShipVisible then "#" else "~"
+    | i == 2    = "O"
+    | i == 3    = "X"
 
 {------------------------------- Helper Functions -------------------------------------------}
 
