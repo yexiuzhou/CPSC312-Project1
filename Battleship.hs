@@ -69,6 +69,37 @@ inputShip :: [Ship] -> Int -> IO Ship
 inputShips :: Int -> [Ship] -> IO [Ship]
 
 -}
+{------------------------------- Validation Functions -------------------------------------}
+
+
+{------------------------------- Print Functions ------------------------------------------}
+
+-- printBoards prints the board state
+printBoards :: [[Int]] -> [[Int]] -> Bool -> IO ()
+
+printBoards aiBoard playerBoard aiBoardVisible =
+  do
+    printBoard aiBoard aiBoardVisible
+    putStrLn("--------------")
+    printBoard playerBoard True
+
+
+-- printBoard prints the state of a singular board
+printBoard :: [[Int]] -> Bool -> IO ()
+printBoard board isShipVisibile = 
+  do
+    if isShipVisibile
+      then do
+        -- TODO display everything properly
+
+    else do
+      -- TODO replace ships with blanks (unless theyre hit)
+      
+
+{------------------------------- Helper Functions -------------------------------------------}
+
+
+{------------------------------- Main Functions -------------------------------------------}
 
 -- play Plays the game
 {-
@@ -76,6 +107,27 @@ Takes the player board, the ai board, the ai (function that generates next moves
  the ai board visibility and returns an output (current state of the game)
 -}
 play :: [[Int]] -> [[Int]] -> ([Int] -> [Int]) -> Bool -> IO ()
+
+play playerBoard aiBoard ai aiBoardVisible aiNextMoves difficulty =
+  do
+    printBoards aiBoard playerBoard aiBoardVisible
+    putStrLn("It's your turn, input a coordinate to strike.")
+    playerTarget <- getTarget aiBoard
+    newAIBoard <- updateBoard aiBoard playerTarget
+
+    if (allShipsHit newAIBoard)
+      then do
+        putStrLn("Congratulations you have won the match!!!")
+    else do
+      aiTarget <- -- TODO
+      newPlayerBoard <- updateBoard playerBoard aiTarget
+
+      if (allShipsHit newPlayerBoard)
+        then do
+          putStrLn("Sorry, looks like you lost...")
+      else do
+        play newPlayerBoard newAIBoard ai aiBoardVisible aiNextMoves difficulty
+ 
 
 
 -- save Saves the game a .csv file
