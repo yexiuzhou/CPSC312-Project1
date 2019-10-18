@@ -5,7 +5,6 @@ type Field = [[Bool]]
 validX = ['A' .. 'J']
 validY = [1 .. 10]
 
-aiBoardVisible = True
 
 {-
 -- Probably also want a player type
@@ -70,6 +69,7 @@ inputShips :: Int -> [Ship] -> IO [Ship]
 
 -}
 {------------------------------- Validation Functions -------------------------------------}
+
 
 
 {------------------------------- Print Functions ------------------------------------------}
@@ -182,10 +182,11 @@ main =
         		putStrLn("Ok, lets start a new game.")
         		putStrLn("First off lets set up your board")
         		putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
+                let aiBoardVisible = True
                 playerBoard <- setUpPlayerBoard
                 putStrLn("Please choose the AI Difficulty:")
                 putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
-                difficulty <- (toInt getLine)
+                difficulty <- getDifficulty
                 aiBoard <- setUpAIBoard
                 aiNextMoves <- getMoves difficulty
                 play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
