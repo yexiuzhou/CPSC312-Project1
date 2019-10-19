@@ -122,14 +122,45 @@ getboardsymbol i isShipVisible
 {------------------------------- Helper Functions -------------------------------------------}
 
 -- setUpPlayerBoard
--- toInt
+-- toInt converts a string to an integer assuming its a digit
+toInt :: String -> Int
+toInt str = toIntHelper 0 str
+
+toIntHelper :: Int -> String -> Int
+toIntHelper n [] = n
+toIntHelper n (h:t)
+    | isDigit h = toIntHelper (n*10 + ch2dig h) t
+
+-- ch2dig converts Char to Int
+ch2dig :: Char -> Int
+ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
+
+-- isDigit check to see if a Char is a digit
+isDigit :: Char -> Bool
+isDigit ch = ch >=  '0' &&  ch <=  '9'
+
 -- setUpAIBoard
 
 -- ai function should take in a list of nextMoves and return a new list of next moves based on difficulty
 -- eg: ai difficulty nextMoves
 
--- getMoves
--- toCoord
+-- getMoves takes an Int that represents the difficulty and a board and returns the initial list of coordinates
+-- for the ai
+getMoves :: Int -> [[Int]] -> [(Int, Int)]
+getMoves 1 board = getRandomMove
+getMoves 2 board = getRandomMove
+getMoves 3 board = getRandomShipCoord board
+getMoves 4 board = getAllShipCoord board
+getMoves _ board = [(0,0)]
+
+
+-- toCoord takes a list of Ints and returns a list of coords
+toCoord :: [Int] -> [(Int,Int)]
+toCoord [] = []
+toCoord h1:h2:t = (h1,h2): toCoord t
+toCoord h:[] = []
+
+
 -- importBoard
 
 
@@ -225,7 +256,7 @@ main =
       		parsedFile <- [splitsep (==',') line | line <- splitsep (=='\n') file]
       		difficulty <- (toInt ((parsedFile !! 0) !! 0))
       		aiBoardVisible <- (((parsedFile !! 0) !! 1) == "True")
-      		aiNextMoves <- (toCoord (toInt (parsedFile !! 1)))
+      		aiNextMoves <- (toCoord (map toInt (parsedFile !! 1)))
       		aiData <- slice 2 10 parsedFile
       		playerData <- slice 12 10 parsedFile
       		aiBoard <- importBoard aiData
