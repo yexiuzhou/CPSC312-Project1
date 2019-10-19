@@ -153,6 +153,12 @@ getMoves 3 board = getRandomShipCoord board
 getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
+-- getRandomMove returns a random coordinate between (0,0) and (9,9)
+
+-- getRandomShipCoord returns a random coordinate on the board that stores a ship coordinate
+
+-- getAllShipCoord returns all the coordinates on the board that stores a ship coordinate
+
 
 -- toCoord takes a list of Ints and returns a list of coords
 toCoord :: [Int] -> [(Int,Int)]
