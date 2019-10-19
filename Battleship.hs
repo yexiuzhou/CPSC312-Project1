@@ -99,7 +99,23 @@ printBoard board isShipVisibile =
 {------------------------------- Helper Functions -------------------------------------------}
 
 -- setUpPlayerBoard
--- toInt
+-- toInt converts a string to an integer assuming its a digit
+toInt :: String -> Int
+toInt str = toIntHelper 0 str
+
+toIntHelper :: Int -> String -> Int
+toIntHelper n [] = n
+toIntHelper n (h:t)
+    | isDigit h = toIntHelper (n*10 + ch2dig h) t
+
+-- ch2dig converts Char to Int
+ch2dig :: Char -> Int
+ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
+
+-- isDigit check to see if a Char is a digit
+isDigit :: Char -> Bool
+isDigit ch = ch >=  '0' &&  ch <=  '9'
+
 -- setUpAIBoard
 
 -- ai function should take in a list of nextMoves and return a new list of next moves based on difficulty
