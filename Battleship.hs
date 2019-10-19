@@ -114,10 +114,10 @@ rowToSymbol row isShipVisible = map (\ i -> getSymbol x isShipVisible) row
 -- only show ship if isShipVisible is true, otherwise show water
 getboardsymbol :: Int -> Bool -> Text
 getboardsymbol i isShipVisible
-    | i == 0    = "~"
-    | i == 1    = if isShipVisible then "#" else "~"
-    | i == 2    = "O"
-    | i == 3    = "X"
+    | i == 0    = "~" -- water
+    | i == 1    = if isShipVisible then "#" else "~" -- ship
+    | i == 2    = "O" -- miss
+    | i == 3    = "X" -- hit
 
 {------------------------------- Helper Functions -------------------------------------------}
 
@@ -160,9 +160,27 @@ toCoord [] = []
 toCoord h1:h2:t = (h1,h2): toCoord t
 toCoord h:[] = []
 
-
+-- getAItarget returns the head of aiNextMoves (aiNextMoves shouldn't be empty)
+getAItarget :: [(Int,Int)] -> (Int,Int)
+getAItarget [] = (0,0)
+getAItarget (h:t) = h
 -- importBoard
 
+-- allShipsHit returns true if all ships have been hit on the given board, false otherwise
+allShipsHit :: [[Int]] -> Bool
+
+allShipsHit [] = True
+allShipsHit (h:t) =  (allShipsHitHelper h) && (allShipsHit t)
+
+-- allShipsHitHelper takes a list of Ints and returns true if all the ships in the list have been hit 
+--(ie contains no 1's)
+allShipsHitHelper :: [Int] -> Bool
+allShipsHitHelper [] = True
+allShipsHitHelper (h:t)
+    | h == 1 = False
+    | otherwise = allShipsHitHelper t
+
+-- shipHasBeenHit compares the old board with the new one to see if a ship has been hit
 
 {------------------------------- Main Functions -------------------------------------------}
 
@@ -184,7 +202,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
       then do
         putStrLn("Congratulations you have won the match!!!")
     else do
-      aiTarget <- -- TODO
+      aiTarget <- getAItarget aiNextMoves
       newPlayerBoard <- updateBoard playerBoard aiTarget
 
       if (allShipsHit newPlayerBoard)
