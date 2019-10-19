@@ -86,14 +86,8 @@ printBoards aiBoard playerBoard aiBoardVisible =
 
 -- printBoard prints the state of a singular board
 printBoard :: [[Int]] -> Bool -> IO ()
-printBoard board isShipVisibile = 
-  do
-    if isShipVisibile
-      then do
-        -- TODO display everything properly
-
-    else do
-      -- TODO replace ships with blanks (unless theyre hit)
+printBoard board True = -- TODO display everything properly
+printBoard board False = -- TODO replace ships with blanks (unless theyre hit)
       
 
 {------------------------------- Helper Functions -------------------------------------------}
@@ -121,7 +115,16 @@ isDigit ch = ch >=  '0' &&  ch <=  '9'
 -- ai function should take in a list of nextMoves and return a new list of next moves based on difficulty
 -- eg: ai difficulty nextMoves
 
--- getMoves
+-- getMoves takes an Int that represents the difficulty and a board and returns the initial list of coordinates
+-- for the ai
+getMoves :: Int -> [[Int]] -> [(Int, Int)]
+getMoves 1 board = getRandomMove
+getMoves 2 board = getRandomMove
+getMoves 3 board = getRandomShipCoord board
+getMoves 4 board = getAllShipCoord board
+getMoves _ board = [(0,0)]
+
+
 -- toCoord
 -- importBoard
 
@@ -218,7 +221,7 @@ main =
       		parsedFile <- [splitsep (==',') line | line <- splitsep (=='\n') file]
       		difficulty <- (toInt ((parsedFile !! 0) !! 0))
       		aiBoardVisible <- (((parsedFile !! 0) !! 1) == "True")
-      		aiNextMoves <- (toCoord (toInt (parsedFile !! 1)))
+      		aiNextMoves <- (toCoord (map toInt (parsedFile !! 1)))
       		aiData <- slice 2 10 parsedFile
       		playerData <- slice 12 10 parsedFile
       		aiBoard <- importBoard aiData
