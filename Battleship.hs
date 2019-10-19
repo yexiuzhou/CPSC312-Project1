@@ -125,7 +125,13 @@ getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
 
--- toCoord
+-- toCoord takes a list of Ints and returns a list of coords
+toCoord :: [Int] -> [(Int,Int)]
+toCoord [] = []
+toCoord h1:h2:t = (h1,h2): toCoord t
+toCoord h:[] = []
+
+
 -- importBoard
 
 
