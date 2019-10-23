@@ -154,10 +154,37 @@ getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
 -- getRandomMove returns a random coordinate between (0,0) and (9,9)
+getRandomMove :: [(Int, Int)] 
+getRandomMove = 
+  do
+    g <- newStdGen
+    i <- randomRs (0, 9) g
+    j <- randomRs (0, 9) g
+    return ([(i,j)])
+
 
 -- getRandomShipCoord returns a random coordinate on the board that stores a ship coordinate
+getRandomShipCoord :: [[Int]] -> [(Int, Int)]
+getRandomShipCoord board = 
+  do
+    g <- newStdGen
+    return ((getAllShipCoord board)!!(randomRs (0,  (length (getAllShipCoord board)) - 1 ) g))
 
 -- getAllShipCoord returns all the coordinates on the board that stores a ship coordinate
+getAllShipCoord :: [[Int]] -> [(Int, Int)]
+getAllShipCoord board = getAllShipCoordHelper 0 board
+
+-- outer loop
+getAllShipCoordHelper :: Int -> [[Int]] -> [(Int, Int)]
+getAllShipCoordHelper _ [] = []
+getAllShipCoordHelper row (h:t) = getAllShipCoordHelperHelper row 0 h ++ getAllShipCoordHelper (row+1) t
+
+-- inner loop
+getAllShipCoordHelperHelper :: Int -> Int -> [Int] -> [(Int, Int)]
+getAllShipCoordHelperHelper _ [] = []
+getAllShipCoordHelperHelper row col (h:t)
+    | h == 1 || h == 3 = (row,col): getAllShipCoordHelperHelper row (col+1) t
+    | otherwise = getAllShipCoordHelperHelper row (col+1) t
 
 
 -- toCoord takes a list of Ints and returns a list of coords
@@ -174,7 +201,6 @@ getAItarget (h:t) = h
 
 -- allShipsHit returns true if all ships have been hit on the given board, false otherwise
 allShipsHit :: [[Int]] -> Bool
-
 allShipsHit [] = True
 allShipsHit (h:t) =  (allShipsHitHelper h) && (allShipsHit t)
 
@@ -187,6 +213,22 @@ allShipsHitHelper (h:t)
     | otherwise = allShipsHitHelper t
 
 -- shipHasBeenHit compares the old board with the new one to see if a ship has been hit
+shipHasBeenHit :: [[Int]] -> [[Int]] -> Bool
+shipHasBeenHit [] [] = False
+shipHasBeenHit (h1:t1) (h2:t2) = (beenHitHelper h1 h2) || (shipHasBeenHit t1 t2)
+
+beenHitHelper :: [Int] -> [Int] -> Bool
+beenHitHelper [] [] = False
+beenHitHelper (h1:t1) (h2:t2)
+    | shipHitHere h1 h2 = True
+    | otherwise = beenHitHelper t1 t2
+
+shipHitHere :: Int -> Int -> Bool
+shipHitHere 1 3 = True
+shipHitHere _ _ = False
+
+
+
 
 {------------------------------- Main Functions -------------------------------------------}
 
@@ -221,7 +263,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
           then do
             save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
         else do
-          play newPlayerBoard newAIBoard ai aiBoardVisible aiNextMoves difficulty
+          play newPlayerBoard newAIBoard ai aiBoardVisible newAiNextMoves difficulty
  
 
 
