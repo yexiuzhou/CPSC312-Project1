@@ -272,7 +272,6 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 -- second line is the ai's current list of next moves
 -- after that is 10 lines of AI board state and 10 lines of player board state
 save :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> IO()
-
 save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves = 
 	do
 		putStrLn("What is the name of the file you'd like to save to? (include .csv)")
@@ -282,10 +281,28 @@ save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 		return ()
 
 -- encodeInputs encodes the input into a list of strings
-encodeInputs :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> [[String]]
+-- encodeInputs playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+encodeInputs :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> String
+encodeInputs pBoard aiBoard diff vis aiNext = (encodeAI diff vis) ++ (encodeMoves aiNext) ++ (encodeBoard pBoard) ++ (encodeBoard aiBoard)
 
-encodeInputs = 
+-- helper functions to make encode easier
+encodeAI :: Int -> Bool -> String
+encodeAI difficulty True = show difficulty ++ "," ++ "True" ++ "\n"
+encodeAI difficulty False = show difficulty ++ "," ++ "False" ++ "\n"
 
+encodeMoves :: [(Int,Int)] -> String
+encodeMoves [] = "\n"
+encodeMoves [(h1,h2)] = show h1 ++ "," ++ show h2 ++ "\n"
+encodeMoves (h1,h2):t = show h1 ++ "," ++ show h2 ++ "," ++  encodeMoves t 
+
+encodeBoard :: [[Int]] -> String
+encodeBoard [] = ""
+encodeBoard (h:t) = (intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
+
+intercalate :: [a] -> [[a]] -> [a]
+intercalate s [] = []
+intercalate s [x] = x
+intercalate s (h:t) = h:s:(intercalate s t)
 
 -- The entry point of the program
 main :: IO ()
