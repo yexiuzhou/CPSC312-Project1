@@ -154,10 +154,37 @@ getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
 -- getRandomMove returns a random coordinate between (0,0) and (9,9)
+getRandomMove :: [(Int, Int)] 
+getRandomMove = 
+  do
+    g <- newStdGen
+    i <- randomRs (0, 9) g
+    j <- randomRs (0, 9) g
+    return ([(i,j)])
+
 
 -- getRandomShipCoord returns a random coordinate on the board that stores a ship coordinate
+getRandomShipCoord :: [[Int]] -> [(Int, Int)]
+getRandomShipCoord board = 
+  do
+    g <- newStdGen
+    return ((getAllShipCoord board)!!(randomRs (0,  (length (getAllShipCoord board)) - 1 ) g))
 
 -- getAllShipCoord returns all the coordinates on the board that stores a ship coordinate
+getAllShipCoord :: [[Int]] -> [(Int, Int)]
+getAllShipCoord board = getAllShipCoordHelper 0 board
+
+-- outer loop
+getAllShipCoordHelper :: Int -> [[Int]] -> [(Int, Int)]
+getAllShipCoordHelper _ [] = []
+getAllShipCoordHelper row (h:t) = getAllShipCoordHelperHelper row 0 h ++ getAllShipCoordHelper (row+1) t
+
+-- inner loop
+getAllShipCoordHelperHelper :: Int -> Int -> [Int] -> [(Int, Int)]
+getAllShipCoordHelperHelper _ [] = []
+getAllShipCoordHelperHelper row col (h:t)
+    | h == 1 || h == 3 = (row,col): getAllShipCoordHelperHelper row (col+1) t
+    | otherwise = getAllShipCoordHelperHelper row (col+1) t
 
 
 -- toCoord takes a list of Ints and returns a list of coords
@@ -174,7 +201,6 @@ getAItarget (h:t) = h
 
 -- allShipsHit returns true if all ships have been hit on the given board, false otherwise
 allShipsHit :: [[Int]] -> Bool
-
 allShipsHit [] = True
 allShipsHit (h:t) =  (allShipsHitHelper h) && (allShipsHit t)
 
@@ -187,6 +213,22 @@ allShipsHitHelper (h:t)
     | otherwise = allShipsHitHelper t
 
 -- shipHasBeenHit compares the old board with the new one to see if a ship has been hit
+shipHasBeenHit :: [[Int]] -> [[Int]] -> Bool
+shipHasBeenHit [] [] = False
+shipHasBeenHit (h1:t1) (h2:t2) = (beenHitHelper h1 h2) || (shipHasBeenHit t1 t2)
+
+beenHitHelper :: [Int] -> [Int] -> Bool
+beenHitHelper [] [] = False
+beenHitHelper (h1:t1) (h2:t2)
+    | shipHitHere h1 h2 = True
+    | otherwise = beenHitHelper t1 t2
+
+shipHitHere :: Int -> Int -> Bool
+shipHitHere 1 3 = True
+shipHitHere _ _ = False
+
+
+
 
 {------------------------------- Main Functions -------------------------------------------}
 
@@ -221,7 +263,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
           then do
             save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
         else do
-          play newPlayerBoard newAIBoard ai aiBoardVisible aiNextMoves difficulty
+          play newPlayerBoard newAIBoard ai aiBoardVisible newAiNextMoves difficulty
  
 
 
@@ -230,7 +272,6 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 -- second line is the ai's current list of next moves
 -- after that is 10 lines of AI board state and 10 lines of player board state
 save :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> IO()
-
 save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves = 
 	do
 		putStrLn("What is the name of the file you'd like to save to? (include .csv)")
@@ -240,10 +281,28 @@ save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 		return ()
 
 -- encodeInputs encodes the input into a list of strings
-encodeInputs :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> [[String]]
+-- encodeInputs playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+encodeInputs :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> String
+encodeInputs pBoard aiBoard diff vis aiNext = (encodeAI diff vis) ++ (encodeMoves aiNext) ++ (encodeBoard pBoard) ++ (encodeBoard aiBoard)
 
-encodeInputs = 
+-- helper functions to make encode easier
+encodeAI :: Int -> Bool -> String
+encodeAI difficulty True = show difficulty ++ "," ++ "True" ++ "\n"
+encodeAI difficulty False = show difficulty ++ "," ++ "False" ++ "\n"
 
+encodeMoves :: [(Int,Int)] -> String
+encodeMoves [] = "\n"
+encodeMoves [(h1,h2)] = show h1 ++ "," ++ show h2 ++ "\n"
+encodeMoves (h1,h2):t = show h1 ++ "," ++ show h2 ++ "," ++  encodeMoves t 
+
+encodeBoard :: [[Int]] -> String
+encodeBoard [] = ""
+encodeBoard (h:t) = (intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
+
+intercalate :: [a] -> [[a]] -> [a]
+intercalate s [] = []
+intercalate s [x] = x
+intercalate s (h:t) = h:s:(intercalate s t)
 
 -- The entry point of the program
 main :: IO ()
