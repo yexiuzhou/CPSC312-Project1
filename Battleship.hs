@@ -123,6 +123,11 @@ getboardsymbol i isShipVisible
     | i == 2    = "O" -- miss
     | i == 3    = "X" -- hit
 
+
+
+
+
+
 {------------------------------- Helper Functions -------------------------------------------}
 
 -- setUpPlayerBoard
@@ -311,6 +316,12 @@ convertLetterToNum letter
     | letter == 'I' = 8
     | letter == 'J' = 9
     | otherwise = -1
+
+
+
+
+
+    
 {------------------------------- Main Functions -------------------------------------------}
 
 -- play Plays the game
