@@ -83,7 +83,7 @@ getboardsymbol i isShipVisible
 
 -- getDifficulty prompts the player for a difficulty
 getDifficulty :: Int
-getDifficulty = 
+getDifficulty =
     do
       putStrLn("Please choose the AI Difficulty:")
       putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
@@ -117,7 +117,7 @@ isDigit ch = ch >=  '0' &&  ch <=  '9'
 
 -- setUpAIBoard sets up the aiBoard
 setUpAIBoard :: [[Int]]
-setUpAIBoard = 
+setUpAIBoard =
     do
       board <- createBoard 10 10
       board <- placeShip 5 board True
@@ -230,6 +230,7 @@ toCoord (h:[]) = []
 getAItarget :: [(Int,Int)] -> (Int,Int)
 getAItarget [] = (0,0)
 getAItarget (h:t) = h
+
 -- importBoard
 
 -- allShipsHit returns true if all ships have been hit on the given board, false otherwise
@@ -309,7 +310,7 @@ convertLetterToNum letter
 
 
 
-    
+
 {------------------------------- Main Functions -------------------------------------------}
 
 -- play Plays the game
@@ -404,6 +405,23 @@ main =
         putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
           let aiBoardVisible = True
           playerBoard <- setUpPlayerBoard
+          difficulty <- getDifficulty
+          aiBoard <- setUpAIBoard
+          aiNextMoves <- getMoves difficulty
+          play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+    else do -- load game
+      putStrLn("What is your file's name?")
+      fileName <- getLine
+      file <- readFile fileName
+    if (newOrLoad == "1") -- new game
+      then do
+        putStrLn("Ok, lets start a new game.")
+        putStrLn("First off lets set up your board")
+        putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
+          let aiBoardVisible = True
+          playerBoard <- setUpPlayerBoard
+          putStrLn("Please choose the AI Difficulty:")
+          putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
           difficulty <- getDifficulty
           aiBoard <- setUpAIBoard
           aiNextMoves <- getMoves difficulty
