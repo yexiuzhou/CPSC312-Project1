@@ -10,6 +10,10 @@ type Field = [[Bool]]
 validX = ['A' .. 'J']
 validY = [1 .. 10]
 
+water_val = 0
+ship_val = 1
+miss_val = 2
+hit_val = 3
 
 {-
 -- Probably also want a player type
@@ -141,8 +145,44 @@ isDigit ch = ch >=  '0' &&  ch <=  '9'
 
 -- setUpAIBoard
 
--- ai function should take in a list of nextMoves and return a new list of next moves based on difficulty
--- eg: ai difficulty nextMoves
+-- ai next moves function, takes difficulty, board, current next moves, last move made, if it was a hit
+-- assuming that the choosen target from the previous move has been removed from currNextMoves
+getAiNextMoves :: Int -> [[Int]] -> (Int, Int) -> Bool -> [(Int, Int)]
+getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove
+getAiNextMoves 4 board currNextMoves lastMove _ = currNextMoves
+getAiNextMoves _ board currNextMoves lastMove False
+    | null currNextMoves = getRandomMove
+    | otherwise = currNextMoves
+getAiNextMoves _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
+
+-- generate neighbouring coords around the hit, return the ones that aren't hit/miss
+getNextMovesHelper :: [[Int]] -> (Int, Int) -> [(Int, Int)]
+getNextMovesHelper board hit = validateNextMoves board (getNeighbours hit)
+
+-- get the surrounding four neighbours
+getNeighbours :: (Int, Int) -> [(Int, Int)]
+getNeighbours (x,y) = [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
+
+-- make sure neighbours are in the board and are either ships or boards
+validateNextMoves :: [(Int, Int)] -> [[Int]] -> [(Int, Int)]
+validateNextMoves board neighbours = filter p2 (filter p1 neighbours)
+  where p1 n = isValidCoordinateNum n
+        p2 n = isWaterOrShip n board
+
+-- Returns true if the given coordinate in the form (row,col) is on the board (ie valid), else false.
+isValidCoordinateNum :: (Int, Int) -> Bool
+isValidCoordinateNum (row, col) = row >= 0 && row <= 9 && col >= 0 && col <= 9
+
+-- Returns true if the given coordinate is water or ship (has not been targeted yet)
+isWaterOrShip :: (Int, Int) -> [[Int]] -> Bool
+isWaterOrShip (i,j) board =
+    val /= miss_val && val /= hit_val
+    where val = getValueAtCoordinate board (i,j)
+
+-- Returns the value on the board at the given coordinate (water,ship,hit,miss)
+getValueAtCoordinate :: [[Int]] -> (Int, Int) -> Int
+getValueAtCoordinate board (row,col) = (board !! row) !! col
+
 
 -- getMoves takes an Int that represents the difficulty and a board and returns the initial list of coordinates
 -- for the ai
@@ -229,7 +269,48 @@ shipHitHere _ _ = False
 
 
 
+-- If input is an invalid coordinate or a coordinate already hit in past turns,
+-- recursively call getTarget until a valid target
+getTarget :: [[Int]] -> IO (Int, Int)
+getTarget aiboard =
+    do
+        putStrLn("Please input your target in the form (A,1)")
+        target <- getLine
+        if (isValidCoordinate target)
+            then do
+                let coordinate = createCoordinate target
+                if (isWaterOrShip aiboard coordinate)
+                    then return coordinate
+                    else do
+                        putStrLn("This coordinate was previously hit. Please try again")
+                        getTarget aiboard
+        else do
+            putStrLn("Invalid coordinate form. Please try again")
+            getTarget aiboard
 
+-- Checks if the coordinate given is a valid board coordinate.
+isValidCoordinate :: [Char] -> Bool
+isValidCoordinate [letter, num] = ((toUpper letter) `elem` validX) && (num `elem` validY)
+isValidCoordinate lst = False
+
+-- Converting the letter,number representation to a coordinate of form (row, column)
+createCoordinate :: [Char] -> (Int, Int)
+createCoordinate [letter,num] = ((charToNum num), (convertLetterToNum (toUpper letter)))
+
+-- Takes letter character of a coordinate and returns the integer mapping
+convertLetterToNum :: Char -> Int
+convertLetterToNum letter
+    | letter == 'A' = 0
+    | letter == 'B' = 1
+    | letter == 'C' = 2
+    | letter == 'D' = 3
+    | letter == 'E' = 4
+    | letter == 'F' = 5
+    | letter == 'G' = 6
+    | letter == 'H' = 7
+    | letter == 'I' = 8
+    | letter == 'J' = 9
+    | otherwise = -1
 {------------------------------- Main Functions -------------------------------------------}
 
 -- play Plays the game
