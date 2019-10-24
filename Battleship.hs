@@ -21,6 +21,11 @@ isInt [] = True
 isInt (h:t) = isDigit h && isInt t
 
 
+
+
+
+
+
 {------------------------------- Print Functions ------------------------------------------}
 -- TODO Test the Print Functions
 -- printBoards prints the board state
@@ -378,6 +383,9 @@ intercalate :: [a] -> [[a]] -> [a]
 intercalate s [] = []
 intercalate s [x] = x
 intercalate s (h:t) = h:s:(intercalate s t)
+
+
+
 
 -- The entry point of the program
 main :: IO ()
