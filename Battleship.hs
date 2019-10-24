@@ -83,7 +83,7 @@ getboardsymbol i isShipVisible
 
 -- getDifficulty prompts the player for a difficulty
 getDifficulty :: Int
-getDifficulty = 
+getDifficulty =
     do
       putStrLn("Please choose the AI Difficulty:")
       putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
@@ -113,11 +113,22 @@ ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
 isDigit :: Char -> Bool
 isDigit ch = ch >=  '0' &&  ch <=  '9'
 
+-- TODO
 -- setUpPlayerBoard sets up the playerBoard
+setUpPlayerBoard :: [[Int]]
+setUpPlayerBoard = -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
+    do
+      board <- createBoard 10 10
+      board <- placeShip 5 board True
+      board <- placeShip 4 board True
+      board <- placeShip 3 board True
+      board <- placeShip 2 board True
+      board <- placeShip 1 board True
+      return board
 
 -- setUpAIBoard sets up the aiBoard
 setUpAIBoard :: [[Int]]
-setUpAIBoard = 
+setUpAIBoard =
     do
       board <- createBoard 10 10
       board <- placeShip 5 board True
@@ -129,8 +140,8 @@ setUpAIBoard =
 
 -- placeShip n b r , places a ship of length n on board b randomly if r is true, manually otherwise
 placeShip :: Int -> [[Int]] -> Bool -> [[Int]]
-placeShip n b True = -- TODO
-placeShip n b False = [[]] -- TODO
+placeShip n b True = b -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
+placeShip n b False = b -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
 
 
 -- createBoard row col generates a row x col list of lists with 0 inside
@@ -230,6 +241,7 @@ toCoord (h:[]) = []
 getAItarget :: [(Int,Int)] -> (Int,Int)
 getAItarget [] = (0,0)
 getAItarget (h:t) = h
+
 -- importBoard
 
 -- allShipsHit returns true if all ships have been hit on the given board, false otherwise
@@ -260,7 +272,32 @@ shipHitHere :: Int -> Int -> Bool
 shipHitHere 1 3 = True
 shipHitHere _ _ = False
 
+-- Updates board to reflect player target
+-- the target is water or a ship (ie isWaterOrShip returns true)
+updateBoard :: [[Int]] -> (Int, Int) -> IO [[Int]]
+updateBoard board target =
+    do
+        if unhitShipAtSquare board target
+            then do
+                putStrLn("It's a HIT!"
+                return (updateBoardSquare board target)
+            else do
+                putStrLn("It's a miss...")
+                return (updateBoardSquare board target)
 
+-- add 2 to the value at position (row,col)
+updateBoardSquare :: [[Int]] -> (Int,Int) -> IO [[Int]]
+updateBoardSquare board (row, col) newval =
+    [[if i == row && j == col then (getValueOfCoordinate board (i,j))+2
+                              else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+
+-- Checks whether the given coordinate contains an unhit ship
+unhitShipAtCoord :: [[Int]] -> (Int, Int) -> Bool
+unhitShipAtCoord aiboard coordinate = (getValueOfCoordinate aiboard coordinate) == 1
+
+-- Returns the value on the board at the given coordinate
+getValueOfCoordinate :: [[Int]] -> (Int, Int) -> Int
+getValueOfCoordinate board (row,col) = (board !! row) !! col
 
 -- If input is an invalid coordinate or a coordinate already hit in past turns,
 -- recursively call getTarget until a valid target
@@ -309,7 +346,7 @@ convertLetterToNum letter
 
 
 
-    
+
 {------------------------------- Main Functions -------------------------------------------}
 
 -- play Plays the game
@@ -385,7 +422,8 @@ intercalate s [x] = x
 intercalate s (h:t) = h:s:(intercalate s t)
 
 
-
+-- TODO: importBoard - consumes a matrix of strings, convert to a matrix of ints
+importBoard :: [[String]] -> [[Int]]
 
 -- The entry point of the program
 main :: IO ()
@@ -404,6 +442,23 @@ main =
         putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
           let aiBoardVisible = True
           playerBoard <- setUpPlayerBoard
+          difficulty <- getDifficulty
+          aiBoard <- setUpAIBoard
+          aiNextMoves <- getMoves difficulty
+          play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+    else do -- load game
+      putStrLn("What is your file's name?")
+      fileName <- getLine
+      file <- readFile fileName
+    if (newOrLoad == "1") -- new game
+      then do
+        putStrLn("Ok, lets start a new game.")
+        putStrLn("First off lets set up your board")
+        putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
+          let aiBoardVisible = True
+          playerBoard <- setUpPlayerBoard
+          putStrLn("Please choose the AI Difficulty:")
+          putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
           difficulty <- getDifficulty
           aiBoard <- setUpAIBoard
           aiNextMoves <- getMoves difficulty
