@@ -109,6 +109,16 @@ isDigit :: Char -> Bool
 isDigit ch = ch >=  '0' &&  ch <=  '9'
 
 -- setUpPlayerBoard sets up the playerBoard
+setUpPlayerBoard :: [[Int]]
+setUpPlayerBoard = -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
+    do
+      board <- createBoard 10 10
+      board <- placeShip 5 board True
+      board <- placeShip 4 board True
+      board <- placeShip 3 board True
+      board <- placeShip 2 board True
+      board <- placeShip 1 board True
+      return board
 
 -- setUpAIBoard sets up the aiBoard
 setUpAIBoard :: [[Int]]
@@ -124,8 +134,8 @@ setUpAIBoard =
 
 -- placeShip n b r , places a ship of length n on board b randomly if r is true, manually otherwise
 placeShip :: Int -> [[Int]] -> Bool -> [[Int]]
-placeShip n b True = -- TODO
-placeShip n b False = [[]] -- TODO
+placeShip n b True = b -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
+placeShip n b False = b -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
 
 
 -- createBoard row col generates a row x col list of lists with 0 inside
