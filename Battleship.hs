@@ -3,9 +3,6 @@ module Battleship where
 import qualified Data.Text.IO  as T
 import           Text.Tabl
 
-type Coordinate = (Char, Int)
-type Ship = [Coordinate]
-type Field = [[Bool]]
 
 validX = ['A' .. 'J']
 validY = [1 .. 10]
@@ -15,70 +12,13 @@ ship_val = 1
 miss_val = 2
 hit_val = 3
 
-{-
--- Probably also want a player type
 
--- Initialize the play field
-initField :: Field
-
--- Extract the coordinate from the string
-convertInputToCoords :: String -> Coordinate
-
-convertInputToCoords h:t = (h,t) -- need to convert t to Int somehow
-
--- Split a string containing coordinates separated by semi-colons into a list of coordinates
-splitCoordsInString :: String -> [String]
-
--- Check if a coordinate lies inside the field
-validateCoords :: Coordinate -> Bool
-
-validateCoords (x,y) = (elem x validX) && (elem y validY)
-
--- Make sure that the ship is given valid coordinates (in a row/col, no overlap with existing ships)
--- ie for a ship 3 long, make sure it receives 3 coords that are in the same "row"
--- might want to have data about "rows" when we initialize the field
--- input: already placed ships, current ship (coords), length of current ship
-validateShipCoordinates :: [Ship] -> Ship -> Int -> Bool
-
-validateShipCoordinates h:t ship len = (validShip h ship len) && (validateShipCoordinates t ship len)
-
--- validShip is a helper function for validateShipCoordinates that makes sure the 2 given ships do not 
--- inhabit the same coordinates and ensures the second ship is given valid coordinates
--- input: already placed ship, current ship, length of current ship
-validShip :: Ship -> Ship -> Int -> Bool
-
-validShip = 
-
--- Output the field in the terminal (as some printable String)
-printField :: Field -> [Ship] -> IO ()
-
--- Mark a cell on the field as hit
-markHit :: Field -> Coordinate -> Field
-
--- Mark a cell on the field as miss
-markMiss :: Field -> Coordinate -> Field
-
--- Remove the ships from list of ships on field when they are destroyed
-removeDestroyedShips :: [Ship] -> [Ship]
-
--- Check if the ship has been destroyed and remove it from the game if it is
-checkShipDestroyed :: Field -> Ship -> Coordinate -> Bool
-
--- Fire a shot at a given coordinate
--- input: opponent field, list of ships, position to shoot at
--- output: updated field, list of ships, hit or miss
-fire :: (Field, [Ship]) -> Coordinate -> (Field, [Ship], Bool)
-
--- Input a ship with a given length
--- already placed ships, length of ship to place, IO output
-inputShip :: [Ship] -> Int -> IO Ship
-
--- Input all the ships for a player
-inputShips :: Int -> [Ship] -> IO [Ship]
-
--}
 {------------------------------- Validation Functions -------------------------------------}
 
+-- isInt determines whether a string can be a valid int
+isInt :: String -> Bool
+isInt [] = True
+isInt (h:t) = isDigit h && isInt t
 
 
 {------------------------------- Print Functions ------------------------------------------}
@@ -122,6 +62,12 @@ getboardsymbol i isShipVisible
     | i == 1    = if isShipVisible then "#" else "~" -- ship
     | i == 2    = "O" -- miss
     | i == 3    = "X" -- hit
+    | otherwise = " "
+
+
+
+
+
 
 
 
@@ -130,7 +76,21 @@ getboardsymbol i isShipVisible
 
 {------------------------------- Helper Functions -------------------------------------------}
 
--- setUpPlayerBoard
+-- getDifficulty prompts the player for a difficulty
+getDifficulty :: Int
+getDifficulty = 
+    do
+      putStrLn("Please choose the AI Difficulty:")
+      putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
+      difficulty <- getLine
+      if (isInt difficulty)
+        then do
+          return (toInt difficulty)
+      else do
+        putStrLn("That is not a valid Integer, please try again")
+        return getDifficulty
+
+
 -- toInt converts a string to an integer assuming its a digit
 toInt :: String -> Int
 toInt str = toIntHelper 0 str
@@ -148,7 +108,30 @@ ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
 isDigit :: Char -> Bool
 isDigit ch = ch >=  '0' &&  ch <=  '9'
 
--- setUpAIBoard
+-- setUpPlayerBoard sets up the playerBoard
+
+-- setUpAIBoard sets up the aiBoard
+setUpAIBoard :: [[Int]]
+setUpAIBoard = 
+    do
+      board <- createBoard 10 10
+      board <- placeShip 5 board True
+      board <- placeShip 4 board True
+      board <- placeShip 3 board True
+      board <- placeShip 2 board True
+      board <- placeShip 1 board True
+      return board
+
+-- placeShip n b r , places a ship of length n on board b randomly if r is true, manually otherwise
+placeShip :: Int -> [[Int]] -> Bool -> [[Int]]
+placeShip n b True = -- TODO
+placeShip n b False = [[]] -- TODO
+
+
+-- createBoard row col generates a row x col list of lists with 0 inside
+createBoard :: Int -> Int -> [[Int]]
+createBoard 0 _ = []
+createBoard r c = [0 | x <-[1..c]] : createBoard (r-1) c
 
 -- ai next moves function, takes difficulty, board, current next moves, last move made, if it was a hit
 -- assuming that the choosen target from the previous move has been removed from currNextMoves
@@ -344,6 +327,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
     else do
       aiTarget <- getAItarget aiNextMoves
       newPlayerBoard <- updateBoard playerBoard aiTarget
+      newAiNextMoves <- getAiNextMoves difficulty newPlayerBoard aiTarget
 
       if (allShipsHit newPlayerBoard)
         then do
@@ -412,8 +396,6 @@ main =
         putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
           let aiBoardVisible = True
           playerBoard <- setUpPlayerBoard
-          putStrLn("Please choose the AI Difficulty:")
-          putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
           difficulty <- getDifficulty
           aiBoard <- setUpAIBoard
           aiNextMoves <- getMoves difficulty
