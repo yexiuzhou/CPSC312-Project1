@@ -113,6 +113,7 @@ ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
 isDigit :: Char -> Bool
 isDigit ch = ch >=  '0' &&  ch <=  '9'
 
+-- TODO
 -- setUpPlayerBoard sets up the playerBoard
 
 -- setUpAIBoard sets up the aiBoard
@@ -261,7 +262,32 @@ shipHitHere :: Int -> Int -> Bool
 shipHitHere 1 3 = True
 shipHitHere _ _ = False
 
+-- Updates board to reflect player target
+-- the target is water or a ship (ie isWaterOrShip returns true)
+updateBoard :: [[Int]] -> (Int, Int) -> IO [[Int]]
+updateBoard board target =
+    do
+        if unhitShipAtSquare board target
+            then do
+                putStrLn("It's a HIT!"
+                return (updateBoardSquare board target)
+            else do
+                putStrLn("It's a miss...")
+                return (updateBoardSquare board target)
 
+-- add 2 to the value at position (row,col)
+updateBoardSquare :: [[Int]] -> (Int,Int) -> IO [[Int]]
+updateBoardSquare board (row, col) newval =
+    [[if i == row && j == col then (getValueOfCoordinate board (i,j))+2
+                              else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+
+-- Checks whether the given coordinate contains an unhit ship
+unhitShipAtCoord :: [[Int]] -> (Int, Int) -> Bool
+unhitShipAtCoord aiboard coordinate = (getValueOfCoordinate aiboard coordinate) == 1
+
+-- Returns the value on the board at the given coordinate
+getValueOfCoordinate :: [[Int]] -> (Int, Int) -> Int
+getValueOfCoordinate board (row,col) = (board !! row) !! col
 
 -- If input is an invalid coordinate or a coordinate already hit in past turns,
 -- recursively call getTarget until a valid target
@@ -386,7 +412,8 @@ intercalate s [x] = x
 intercalate s (h:t) = h:s:(intercalate s t)
 
 
-
+-- TODO: importBoard - consumes a matrix of strings, convert to a matrix of ints
+importBoard :: [[String]] -> [[Int]]
 
 -- The entry point of the program
 main :: IO ()
