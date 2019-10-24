@@ -450,23 +450,6 @@ main =
       putStrLn("What is your file's name?")
       fileName <- getLine
       file <- readFile fileName
-    if (newOrLoad == "1") -- new game
-      then do
-        putStrLn("Ok, lets start a new game.")
-        putStrLn("First off lets set up your board")
-        putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
-          let aiBoardVisible = True
-          playerBoard <- setUpPlayerBoard
-          putStrLn("Please choose the AI Difficulty:")
-          putStrLn("[1] - Easy, [2] - Normal, [3] - Hard, [4] - God")
-          difficulty <- getDifficulty
-          aiBoard <- setUpAIBoard
-          aiNextMoves <- getMoves difficulty
-          play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
-    else do -- load game
-      putStrLn("What is your file's name?")
-      fileName <- getLine
-      file <- readFile fileName
 
       -- first line is [ai difficulty, is aiboard visible]
       -- second line is the ai's current list of next moves
