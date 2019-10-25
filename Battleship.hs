@@ -235,22 +235,13 @@ getEndCoord (p1,p2) n 4 = (p1 - (n-1), p2) -- right
 
 -- ai next moves function, takes difficulty, board, current next moves, last move made
 -- assuming that the choosen target from the previous move has been removed from currNextMoves
-getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> [(Int, Int)]
-getAiNextMoves difficulty board currNextMoves lastMove
-  = getAiNextMovesHelper difficulty board currNextMoves lastMove isTargetHit
-    where isTargetHit = isHit lastMove board
-
-isHit :: (Int, Int) -> [[Int]] -> Bool
-isHit (i,j) board = val == hit_val
-    where val = getValueAtCoordinate board (i,j)
-
-getAiNextMovesHelper :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
-getAiNextMovesHelper 1 board currNextMoves lastMove _ = getRandomMove
-getAiNextMovesHelper 4 board currNextMoves lastMove _ = currNextMoves
-getAiNextMovesHelper _ board currNextMoves lastMove False
+getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
+getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove
+getAiNextMoves 4 board currNextMoves lastMove _ = currNextMoves
+getAiNextMoves _ board currNextMoves lastMove False
     | null currNextMoves = getRandomMove
     | otherwise = currNextMoves
-getAiNextMovesHelper _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
+getAiNextMoves _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
 
 -- generate neighbouring coords around the hit, return the ones that aren't hit/miss
 getNextMovesHelper :: [[Int]] -> (Int, Int) -> [(Int, Int)]
