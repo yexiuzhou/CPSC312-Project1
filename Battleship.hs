@@ -152,6 +152,7 @@ placeShip n b =
   do
     -- get coord and direction and see if a ship can be place, if so then place otherwise try again
     putStrLn("Please input your ship start point in the form A1")
+    putStrLn("The ship you are placing is of size "++ (show n))
     start <- getLine
     if (isValidCoordinate start)
         then do
