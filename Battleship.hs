@@ -228,10 +228,10 @@ randomlyPlaceShip n b =
 
 -- getEndCoord given startCoord n dir returns an end coord
 getEndCoord :: (Int,Int) -> Int -> Int -> (Int,Int)
-getEndCoord (p1,p2) n 1 = (p1, p2 - (n-1)) -- up
-getEndCoord (p1,p2) n 2 = (p1, p2 + (n-1)) -- down
-getEndCoord (p1,p2) n 3 = (p1 + (n-1), p2) -- left
-getEndCoord (p1,p2) n 4 = (p1 - (n-1), p2) -- right
+getEndCoord (p1,p2) n 1 = (p1 - (n-1), p2) -- up
+getEndCoord (p1,p2) n 2 = (p1 + (n-1), p2) -- down
+getEndCoord (p1,p2) n 3 = (p1, p2 - (n-1)) -- left
+getEndCoord (p1,p2) n 4 = (p1, p2 + (n-1)) -- right
 
 
 -- ai next moves function, takes difficulty, board, current next moves, last move made
