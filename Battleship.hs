@@ -67,7 +67,7 @@ isValidCoordinateNum (row, col) = row >= 0 && row <= 9 && col >= 0 && col <= 9
 -- Returns true if the given coordinate is water or ship (has not been targeted yet)
 isWaterOrShip :: [[Int]] -> (Int, Int) -> Bool
 isWaterOrShip board (i,j) =
-    val /= miss_val && val /= hit_val
+    val == water_val || val == ship_val
     where val = getValueAtCoordinate board (i,j)
 
 {----------------------------------------------------------------------------------------------------------------------}
@@ -552,7 +552,7 @@ main =
         putStrLn("Ok, lets start a new game.")
         putStrLn("First off lets set up your board")
         putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
-        let aiBoardVisible = False
+        let aiBoardVisible = True
         playerBoard <- setUpPlayerBoard
         difficulty <- getDifficulty
         aiBoard <- setUpAIBoard
