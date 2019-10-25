@@ -399,7 +399,7 @@ getTarget aiboard =
         if (isValidCoordinate target)
             then do
                 let coordinate = createCoordinate target
-                if (isWaterOrShip aiboard coordinate)
+                if (isWaterOrShip coordinate aiboard)
                     then return coordinate
                     else do
                         putStrLn("This coordinate was previously hit. Please try again")
@@ -410,13 +410,17 @@ getTarget aiboard =
 
 -- Checks if the coordinate given is a valid board coordinate.
 isValidCoordinate :: [Char] -> Bool
-isValidCoordinate [letter, num] = ((T.toUpper letter) `elem` validX) && (num `elem` validY)
+isValidCoordinate [letter, num] = ((strToChar (T.unpack (T.toUpper (T.singleton letter)))) `elem` validX) && (num `elem` validY)
 isValidCoordinate lst = False
 
 -- Converting the letter,number representation to a coordinate of form (row, column)
 createCoordinate :: [Char] -> (Int, Int)
-createCoordinate [letter,num] = ((ch2dig num), (convertLetterToNum (T.toUpper letter)))
+createCoordinate [letter,num] = ((ch2dig num), (convertLetterToNum (strToChar (T.unpack (T.toUpper (T.singleton letter))))))
 
+-- takes the first character in string and returns as char
+strToChar :: String -> Char
+strToChar [] = ' '
+strToChar (h:t) = h
 
 -- Takes letter character of a coordinate and returns the integer mapping
 convertLetterToNum :: Char -> Int
@@ -433,6 +437,10 @@ convertLetterToNum letter
     | letter == 'J' = 9
     | otherwise = -1
 
+-- removes head of a list if it exists
+removeHead :: [a] -> [a]
+removeHead [] = []
+removeHead (h:t) = t
 
 
 
@@ -458,9 +466,9 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
       then do
         putStrLn("Congratulations you have won the match!!!")
     else do
-      aiTarget <- getAItarget aiNextMoves
+      let aiTarget = getAItarget aiNextMoves
       newPlayerBoard <- updateBoard playerBoard aiTarget
-      newAiNextMoves <- getAiNextMoves difficulty newPlayerBoard aiTarget
+      let newAiNextMoves = getAiNextMoves difficulty newPlayerBoard (removeHead aiNextMoves) aiTarget (shipHasBeenHit playerBoard newPlayerBoard)
 
       if (allShipsHit newPlayerBoard)
         then do
@@ -479,7 +487,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 -- first line is [ai difficulty, is aiboard visible]
 -- second line is the ai's current list of next moves
 -- after that is 10 lines of AI board state and 10 lines of player board state
-save :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> IO()
+save :: [[Int]] -> [[Int]] -> Int -> Bool -> [(Int,Int)] -> IO()
 save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
   do
     putStrLn("What is the name of the file you'd like to save to? (include .csv)")
@@ -490,7 +498,7 @@ save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 
 -- encodeInputs encodes the input into a list of strings
 -- encodeInputs playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
-encodeInputs :: [[Int]] -> [[Int]] -> Int -> Bool -> [Int] -> String
+encodeInputs :: [[Int]] -> [[Int]] -> Int -> Bool -> [(Int,Int)] -> String
 encodeInputs pBoard aiBoard diff vis aiNext = (encodeAI diff vis) ++ (encodeMoves aiNext) ++ (encodeBoard pBoard) ++ (encodeBoard aiBoard)
 
 -- helper functions to make encode easier
@@ -505,7 +513,7 @@ encodeMoves ((h1,h2):t) = show h1 ++ "," ++ show h2 ++ "," ++  encodeMoves t
 
 encodeBoard :: [[Int]] -> String
 encodeBoard [] = ""
-encodeBoard (h:t) = (T.intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
+encodeBoard (h:t) = T.unpack ((T.intercalate (T.pack ",") (map T.pack (map show h)))) ++ "\n" ++ encodeBoard t
 
 
 importBoard :: [[String]] -> [[Int]]
@@ -540,7 +548,7 @@ main =
         playerBoard <- setUpPlayerBoard
         difficulty <- getDifficulty
         aiBoard <- setUpAIBoard
-        aiNextMoves <- getMoves difficulty
+        let aiNextMoves = getMoves difficulty playerBoard
         play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
     else do -- load game
       putStrLn("What is your file's name?")
@@ -550,14 +558,14 @@ main =
       -- first line is [ai difficulty, is aiboard visible]
       -- second line is the ai's current list of next moves
       -- after that is 10 lines of AI board state and 10 lines of player board state
-      parsedFile <- [splitsep (==',') line | line <- splitsep (=='\n') file]
-      difficulty <- (toInt ((parsedFile !! 0) !! 0))
-      aiBoardVisible <- (((parsedFile !! 0) !! 1) == "True")
-      aiNextMoves <- (toCoord (map toInt (parsedFile !! 1)))
-      aiData <- V.slice 2 10 parsedFile
-      playerData <- V.slice 12 10 parsedFile
-      aiBoard <- importBoard aiData
-      playerBoard <- importBoard playerData
+      let parsedFile = [splitsep (==',') line | line <- splitsep (=='\n') file]
+      let difficulty = (toInt ((parsedFile !! 0) !! 0))
+      let aiBoardVisible = (((parsedFile !! 0) !! 1) == "True")
+      let aiNextMoves = (toCoord (map toInt (parsedFile !! 1)))
+      let aiData = V.slice 2 10 parsedFile
+      let playerData = V.slice 12 10 parsedFile
+      let aiBoard = importBoard aiData
+      let playerBoard = importBoard playerData
       play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
 
 
