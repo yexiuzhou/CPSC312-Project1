@@ -359,15 +359,19 @@ updateBoard board target =
   do
     if (isShip board target)
       then do
-        putStrLn("It's a HIT!")
+        putStrLn((encodeTarget target) ++ " It's a HIT!")
         return (updateBoardSquare board target)
       else do
-        putStrLn("It's a miss...")
+        putStrLn((encodeTarget target) ++ " It's a miss...")
         return (updateBoardSquare board target)
 
 -- Returns true if the given coordinate is a ship (hasn't been targetted before)
 isShip :: [[Int]] -> (Int, Int) -> Bool
 isShip board (i,j) = ship_val == getValueAtCoordinate board (i,j)
+
+-- encode target as String
+encodeTarget :: (Int, Int) -> String
+encodeTarget (x,y) = convertNumToLetter y ++ show x
 
 -- add 2 to the value at position (row,col)
 updateBoardSquare :: [[Int]] -> (Int,Int) -> [[Int]]
@@ -436,7 +440,20 @@ removeHead :: [a] -> [a]
 removeHead [] = []
 removeHead (h:t) = t
 
-
+-- Takes integer of a coordinate and returns the String mapping
+convertNumToLetter :: Int -> String
+convertNumToLetter int
+    | int == 0 = "A"
+    | int == 1 = "B"
+    | int == 2 = "C"
+    | int == 3 = "D"
+    | int == 4 = "E"
+    | int == 5 = "F"
+    | int == 6 = "G"
+    | int == 7 = "H"
+    | int == 8 = "I"
+    | int == 9 = "J"
+    | otherwise = " "
 
 
 
@@ -452,7 +469,7 @@ play :: [[Int]] -> [[Int]] -> Int -> Bool -> [(Int,Int)] -> IO ()
 play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
   do
     printBoards aiBoard playerBoard aiBoardVisible
-    putStrLn("It's your turn, input a coordinate to strike.")
+    putStrLn(">>> It's your turn, input a coordinate to strike.")
     playerTarget <- getTarget aiBoard
     newAIBoard <- updateBoard aiBoard playerTarget
 
@@ -461,6 +478,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
         putStrLn("Congratulations you have won the match!!!")
     else do
       let aiTarget = getAITarget playerBoard aiNextMoves
+      putStrLn(">>> AI Move:")
       newPlayerBoard <- updateBoard playerBoard aiTarget
       let newAiNextMoves = getAiNextMoves difficulty newPlayerBoard (removeHead aiNextMoves) aiTarget (shipHasBeenHit playerBoard newPlayerBoard)
 
