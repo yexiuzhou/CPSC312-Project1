@@ -1,8 +1,8 @@
 module Battleship where
 
+import qualified Data.List
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import qualified Data.List
 import qualified Data.Vector as V
 import System.Random
 import Text.Tabl
@@ -259,7 +259,7 @@ getNeighbours (x,y) = [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
 
 -- make sure neighbours are in the board and are either ships or boards
 validateNextMoves :: [(Int, Int)] -> [[Int]] -> [(Int, Int)]
-validateNextMoves board neighbours = filter p2 (filter p1 neighbours)
+validateNextMoves neighbours board = filter p2 (filter p1 neighbours)
   where p1 n = isValidCoordinateNum n
         p2 n = isWaterOrShip n board
 
@@ -315,7 +315,7 @@ getAllShipCoordHelper row (h:t) = getAllShipCoordHelperHelper row 0 h ++ getAllS
 
 -- inner loop
 getAllShipCoordHelperHelper :: Int -> Int -> [Int] -> [(Int, Int)]
-getAllShipCoordHelperHelper _ [] = []
+getAllShipCoordHelperHelper _ _ [] = []
 getAllShipCoordHelperHelper row col (h:t)
     | h == 1 || h == 3 = (row,col): getAllShipCoordHelperHelper row (col+1) t
     | otherwise = getAllShipCoordHelperHelper row (col+1) t
@@ -324,7 +324,7 @@ getAllShipCoordHelperHelper row col (h:t)
 -- toCoord takes a list of Ints and returns a list of coords
 toCoord :: [Int] -> [(Int,Int)]
 toCoord [] = []
-toCoord (h1:(h2:t)) = (h1,h2): toCoord t
+toCoord (h1:(h2:t)) = (h1,h2):(toCoord t)
 toCoord (h:[]) = []
 
 -- getAItarget returns the head of aiNextMoves (aiNextMoves shouldn't be empty)
@@ -366,14 +366,14 @@ shipHitHere _ _ = False
 -- the target is water or a ship (ie isWaterOrShip returns true)
 updateBoard :: [[Int]] -> (Int, Int) -> IO [[Int]]
 updateBoard board target =
-    do
-        if unhitShipAtSquare board target
-            then do
-                putStrLn("It's a HIT!")
-                return (updateBoardSquare board target)
-            else do
-                putStrLn("It's a miss...")
-                return (updateBoardSquare board target)
+  do
+    if (isWaterOrShip board target)
+      then do
+        putStrLn("It's a HIT!")
+        return (updateBoardSquare board target)
+      else do
+        putStrLn("It's a miss...")
+        return (updateBoardSquare board target)
 
 -- add 2 to the value at position (row,col)
 updateBoardSquare :: [[Int]] -> (Int,Int) -> IO [[Int]]
@@ -410,12 +410,16 @@ getTarget aiboard =
 
 -- Checks if the coordinate given is a valid board coordinate.
 isValidCoordinate :: [Char] -> Bool
-isValidCoordinate [letter, num] = ((toUpper letter) `elem` validX) && (num `elem` validY)
+isValidCoordinate [letter, num] = ((T.toUpper letter) `elem` validX) && (num `elem` validY)
 isValidCoordinate lst = False
 
 -- Converting the letter,number representation to a coordinate of form (row, column)
 createCoordinate :: [Char] -> (Int, Int)
-createCoordinate [letter,num] = ((charToNum num), (convertLetterToNum (toUpper letter)))
+createCoordinate [letter,num] = ((charToInt num), (convertLetterToNum (T.toUpper letter)))
+
+-- Converts character of a number to an Int
+charToInt :: Char -> Int
+charToInt c = (fromEnum c) - (fromEnum '0')
 
 -- Takes letter character of a coordinate and returns the integer mapping
 convertLetterToNum :: Char -> Int
@@ -471,7 +475,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
           then do
             save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
         else do
-          play newPlayerBoard newAIBoard ai aiBoardVisible newAiNextMoves difficulty
+          play newPlayerBoard newAIBoard difficulty aiBoardVisible newAiNextMoves
 
 
 -- save Saves the game a .csv file
@@ -504,7 +508,7 @@ encodeMoves ((h1,h2):t) = show h1 ++ "," ++ show h2 ++ "," ++  encodeMoves t
 
 encodeBoard :: [[Int]] -> String
 encodeBoard [] = ""
-encodeBoard (h:t) = (intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
+encodeBoard (h:t) = (T.intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
 
 
 importBoard :: [[String]] -> [[Int]]
