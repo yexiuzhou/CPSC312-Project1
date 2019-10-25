@@ -93,7 +93,7 @@ getDifficulty =
           return (toInt difficulty)
       else do
         putStrLn("That is not a valid Integer, please try again")
-        getDifficulty
+        return getDifficulty
 
 
 -- toInt converts a string to an integer assuming its a digit
@@ -198,7 +198,14 @@ placeShipHelper startCoord endCoord currBoard
   with ship values
 -}
 placeShipHelper :: (Int, Int) -> (Int, Int) -> [[Int]] -> [[Int]]
-placeShipHelper (s1,s2) (e1,e2) board = -- TODO
+placeShipHelper (s1,s2) (e1,e2) board -- TODO
+    | s1 == t1 && s2 == t2 = [[if i == s1 && j == s2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == t1 && s2 > t2 = [[if i == s1 && j <= s2 && j >= t2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == t1 && s2 < t2 = [[if i == s1 && j >= s2 && j <= t2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s2 == t2 && s1 > t1 = [[if j == s2 && i <= s1 && i >= t1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s2 == t2 && s1 < t1 = [[if j == s2 && i >= s1 && i <= t1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | otherwise = board
+
 
 -- randomlyPlaceShip
 randomlyPlaceShip :: Int -> [[Int]] -> IO [[Int]]
