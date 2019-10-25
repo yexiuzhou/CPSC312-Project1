@@ -128,11 +128,11 @@ placeShip n b =
 -- placeShipHelper should fill the spaces between startCoord and endCoord (inclusive) with ship values
 placeShipHelper :: (Int, Int) -> (Int, Int) -> [[Int]] -> [[Int]]
 placeShipHelper (s1,s2) (e1,e2) board
-    | s1 == e1 && s2 == e2 = [[if i == s1 && j == s2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s1 == e1 && s2 > e2 = [[if i == s1 && j <= s2 && j >= e2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s1 == e1 && s2 < e2 = [[if i == s1 && j >= s2 && j <= e2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s2 == e2 && s1 > e1 = [[if j == s2 && i <= s1 && i >= e1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s2 == e2 && s1 < e1 = [[if j == s2 && i >= s1 && i <= e1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == e1 && s2 == e2 = [[if i == s1 && j == s2 then 1 else getValueAtCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == e1 && s2 > e2 = [[if i == s1 && j <= s2 && j >= e2 then 1 else getValueAtCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == e1 && s2 < e2 = [[if i == s1 && j >= s2 && j <= e2 then 1 else getValueAtCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s2 == e2 && s1 > e1 = [[if j == s2 && i <= s1 && i >= e1 then 1 else getValueAtCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s2 == e2 && s1 < e1 = [[if j == s2 && i >= s1 && i <= e1 then 1 else getValueAtCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
     | otherwise = board
 
 {- AI Board Setup -----------------------------------------------------------------------------------------------------}
@@ -182,7 +182,7 @@ isFreeBetween (s1,s2) (t1,t2) board
 
 -- isFreeSpace checks to see if a space is free on a board
 isFreeSpace :: (Int,Int) -> [[Int]] -> Bool
-isFreeSpace (r,c) board = (getValueOfCoordinate board (r,c)) == 0
+isFreeSpace (r,c) board = (getValueAtCoordinate board (r,c)) == 0
 
 {----------------------------------------------------------------------------------------------------------------------}
 {- Functions to determine AI's next moves -----------------------------------------------------------------------------}
@@ -320,8 +320,8 @@ encodeTarget (x,y) = convertNumToLetter y ++ show x
 -- add 2 to the value at position (row,col)
 updateBoardSquare :: [[Int]] -> (Int,Int) -> [[Int]]
 updateBoardSquare board (row, col) =
-    [[if i == row && j == col then (getValueOfCoordinate board (i,j))+2
-                              else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    [[if i == row && j == col then (getValueAtCoordinate board (i,j))+2
+                              else getValueAtCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
 
 {----------------------------------------------------------------------------------------------------------------------}
 {- Print Functions ----------------------------------------------------------------------------------------------------}
@@ -571,4 +571,5 @@ main =
       let aiData = drop 12 . take 22 $ parsedFile
       let aiBoard = importBoard aiData
       let playerBoard = importBoard playerData
+
       play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
