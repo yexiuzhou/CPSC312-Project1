@@ -82,7 +82,7 @@ getboardsymbol i isShipVisible
 {------------------------------- Helper Functions -------------------------------------------}
 
 -- getDifficulty prompts the player for a difficulty
-getDifficulty :: Int
+getDifficulty :: IO Int
 getDifficulty =
     do
       putStrLn("Please choose the AI Difficulty:")
@@ -93,7 +93,7 @@ getDifficulty =
           return (toInt difficulty)
       else do
         putStrLn("That is not a valid Integer, please try again")
-        return getDifficulty
+        getDifficulty
 
 
 -- toInt converts a string to an integer assuming its a digit
@@ -115,33 +115,99 @@ isDigit ch = ch >=  '0' &&  ch <=  '9'
 
 -- TODO
 -- setUpPlayerBoard sets up the playerBoard
-setUpPlayerBoard :: [[Int]]
-setUpPlayerBoard = -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
+setUpPlayerBoard :: IO [[Int]]
+setUpPlayerBoard = 
     do
       board <- createBoard 10 10
-      board <- placeShip 5 board True
-      board <- placeShip 4 board True
-      board <- placeShip 3 board True
-      board <- placeShip 2 board True
-      board <- placeShip 1 board True
+      board <- placeShip 5 board
+      printBoard board True
+      board <- placeShip 4 board
+      printBoard board True
+      board <- placeShip 3 board
+      printBoard board True
+      board <- placeShip 2 board
+      printBoard board True
+      board <- placeShip 1 board
       return board
 
 -- setUpAIBoard sets up the aiBoard
-setUpAIBoard :: [[Int]]
+setUpAIBoard :: IO [[Int]]
 setUpAIBoard =
     do
       board <- createBoard 10 10
-      board <- placeShip 5 board True
-      board <- placeShip 4 board True
-      board <- placeShip 3 board True
-      board <- placeShip 2 board True
-      board <- placeShip 1 board True
+      board <- randomlyPlaceShip 5 board
+      board <- randomlyPlaceShip 4 board
+      board <- randomlyPlaceShip 3 board
+      board <- randomlyPlaceShip 2 board
+      board <- randomlyPlaceShip 1 board
       return board
 
--- placeShip n b r , places a ship of length n on board b randomly if r is true, manually otherwise
-placeShip :: Int -> [[Int]] -> Bool -> [[Int]]
-placeShip n b True = b -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
-placeShip n b False = b -- TODO I JUST PUT THIS HERE SO I COULD TRY TO COMPILE, NOT IMPLEMENTED PROPERLY AT ALL
+-- placeShip n b , manually places a ship of length n on board b (use placeShipHelper)
+placeShip :: Int -> [[Int]] -> IO [[Int]]
+placeShip 0 b = return b
+placeShip n b = 
+  do 
+    -- get coord and direction and see if a ship can be place, if so then place otherwise try again
+    putStrLn("Please input your ship start point in the form (A,1)")
+    start <- getLine
+    if (isValidCoordinate start)
+        then do
+        let startCoord = createCoordinate start
+        putStrLn("Please input your ship direction as a number")
+        putStrLn("[1] - up, [2] - down, [3] - left [4] - right")
+        dir <- getLine
+        if (isInt dir && (toInt dir) > 0 &&  (toInt dir) < 5)
+            then do 
+            let endCoord = getEndCoord startCoord n (toInt dir)
+            if (inBoard endCoord && isFreeBetween startCoord endCoord b)
+                then do
+                    return (placeShipHelper startCoord endCoord b)
+                else do
+                    putStrLn("Invalid ship placement please try again.")
+                    return (placeShip n b)
+            else do
+            putStrLn("Invalid direction please try again.")
+            return (placeShip n b)
+        else do
+        putStrLn("Invalid coordinate please try again.")
+        return (placeShip n b)
+
+-- isFreeBetween checks to see if all places in between 2 coords are free for ships to be placed
+-- must be in same row or col (guarenteed because we use getEndCoord)
+isFreeBetween :: (Int, Int) -> (Int, Int) -> [[Int]] -> Bool
+isFreeBetween (s1,s2) (t1,t2) board
+    | s1 == t1 && s2 == t2 = True
+    | s1 == t1 && s2 > t2 = (isFreeSpace (s1,s2) board) && (isFreeBetween (s1,(s2-1)) (t1,t2) board)
+    | s1 == t1 && s2 < t2 = (isFreeSpace (s1,s2) board) && (isFreeBetween (s1,(s2+1)) (t1,t2) board)
+    | s2 == t2 && s1 > t1 = (isFreeSpace (s1,s2) board) && (isFreeBetween ((s1-1),s2) (t1,t2) board)
+    | s2 == t2 && s1 < t1 = (isFreeSpace (s1,s2) board) && (isFreeBetween ((s1+1),s2) (t1,t2) board)
+    | otherwise = False
+
+-- isFreeSpace checks to see if a space is free on a board
+isFreeSpace :: (Int,Int) -> [[Int]] -> Bool
+isFreeSpace (r,c) board = (getValueOfCoordinate board (r,c)) == 0
+
+-- placeShipHelper returns a board with the specified ship added to it
+placeShipHelper :: (Int, Int) -> (Int, Int) -> [[Int]] -> [[Int]] -- start end oldboard (returns newboard)
+placeShipHelper start end board = 
+
+-- randomlyPlaceShip
+randomlyPlaceShip :: Int -> [[Int]] -> IO [[Int]] -- TODO
+randomlyPlaceShip n b =
+  do
+    g <- newStdGen
+    let head = ( ((randomRs (0,9) g) !! 0), ((randomRs (0,9) g) !! 1) )
+
+-- inBoard takes a coord and sees if its in the board
+inBoard :: (Int,Int) -> Bool
+inBoard (a,b) = a >= 0 && a < 10 && b >= 0 && b < 10
+
+-- getEndCoord given startCoord n dir returns an end coord
+getEndCoord :: (Int,Int) -> Int -> Int -> (Int,Int)
+getEndCoord (p1,p2) n 1 = (p1, p2 - (n-1)) -- up
+getEndCoord (p1,p2) n 2 = (p1, p2 + (n-1)) -- down
+getEndCoord (p1,p2) n 3 = (p1 + (n-1), p2) -- left
+getEndCoord (p1,p2) n 4 = (p1 - (n-1), p2) -- right
 
 
 -- createBoard row col generates a row x col list of lists with 0 inside
@@ -198,7 +264,7 @@ getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
 -- getRandomMove returns a random coordinate between (0,0) and (9,9)
-getRandomMove :: [(Int, Int)] 
+getRandomMove :: IO [(Int, Int)] 
 getRandomMove = 
   do
     g <- newStdGen
