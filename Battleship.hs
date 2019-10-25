@@ -159,7 +159,7 @@ placeShip n b =
         if (isInt dir && (toInt dir) > 0 &&  (toInt dir) < 5)
             then do 
             let endCoord = getEndCoord startCoord n (toInt dir)
-            if (inBoard endCoord && isFreeBetween startCoord endCoord b)
+            if (isValidCoordinateNum endCoord && isFreeBetween startCoord endCoord b)
                 then do
                     return (placeShipHelper startCoord endCoord b)
                 else do
@@ -176,7 +176,7 @@ placeShip n b =
 -- must be in same row or col (guarenteed because we use getEndCoord)
 isFreeBetween :: (Int, Int) -> (Int, Int) -> [[Int]] -> Bool
 isFreeBetween (s1,s2) (t1,t2) board
-    | s1 == t1 && s2 == t2 = True
+    | s1 == t1 && s2 == t2 = isFreeSpace (s1,s2) board
     | s1 == t1 && s2 > t2 = (isFreeSpace (s1,s2) board) && (isFreeBetween (s1,(s2-1)) (t1,t2) board)
     | s1 == t1 && s2 < t2 = (isFreeSpace (s1,s2) board) && (isFreeBetween (s1,(s2+1)) (t1,t2) board)
     | s2 == t2 && s1 > t1 = (isFreeSpace (s1,s2) board) && (isFreeBetween ((s1-1),s2) (t1,t2) board)
@@ -188,27 +188,32 @@ isFreeSpace :: (Int,Int) -> [[Int]] -> Bool
 isFreeSpace (r,c) board = (getValueOfCoordinate board (r,c)) == 0
 
 -- placeShipHelper returns a board with the specified ship added to it
-placeShipHelper :: (Int, Int) -> (Int, Int) -> [[Int]] -> [[Int]] -- start end oldboard (returns newboard)
-placeShipHelper start end board = 
+{-
+looks something like:
+placeShipHelper startCoord endCoord currBoard
+
+- startCoord endCoord are both either on same row or column
+- the space between the 2 coordinates are guarenteed to be empty
+- placeShipHelper should fill the spaces between startCoord and endCoord (inclusive)
+  with ship values
+-}
+placeShipHelper :: (Int, Int) -> (Int, Int) -> [[Int]] -> [[Int]]
+placeShipHelper (s1,s2) (e1,e2) board = -- TODO
 
 -- randomlyPlaceShip
-randomlyPlaceShip :: Int -> [[Int]] -> IO [[Int]] -- TODO
+randomlyPlaceShip :: Int -> [[Int]] -> IO [[Int]]
 randomlyPlaceShip n b =
   do
     g <- newStdGen
     let startCoord = ( ((randomRs (0,9) g) !! 0), ((randomRs (0,9) g) !! 1) )
     let dir = (randomRs (1,4) g) !! 0
     let endCoord = getEndCoord startCoord n dir
-    if (inBoard endCoord && isFreeBetween startCoord endCoord b)
+    if (isValidCoordinateNum endCoord && isFreeBetween startCoord endCoord b)
         then do
         return (placeShipHelper startCoord endCoord b)
         else do
         return (placeShip n b)
 
-
--- inBoard takes a coord and sees if its in the board
-inBoard :: (Int,Int) -> Bool
-inBoard (a,b) = a >= 0 && a < 10 && b >= 0 && b < 10
 
 -- getEndCoord given startCoord n dir returns an end coord
 getEndCoord :: (Int,Int) -> Int -> Int -> (Int,Int)
@@ -361,7 +366,7 @@ updateBoard board target =
 
 -- add 2 to the value at position (row,col)
 updateBoardSquare :: [[Int]] -> (Int,Int) -> IO [[Int]]
-updateBoardSquare board (row, col) newval =
+updateBoardSquare board (row, col) =
     [[if i == row && j == col then (getValueOfCoordinate board (i,j))+2
                               else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
 
