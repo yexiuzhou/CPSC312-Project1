@@ -550,8 +550,8 @@ main =
       let difficulty = (toInt ((parsedFile !! 0) !! 0))
       let aiBoardVisible = (((parsedFile !! 0) !! 1) == "True")
       let aiNextMoves = (toCoord (map toInt (parsedFile !! 1)))
-      let aiData = V.slice 2 10 parsedFile
-      let playerData = V.slice 12 10 parsedFile
+      let aiData = drop 2 . take 12 $ parsedFile
+      let playerData = drop 12 . take 22 $ parsedFile
       let aiBoard = importBoard aiData
       let playerBoard = importBoard playerData
       play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
