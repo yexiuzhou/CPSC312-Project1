@@ -35,7 +35,7 @@ printBoards :: [[Int]] -> [[Int]] -> Bool -> IO ()
 printBoards aiBoard playerBoard aiBoardVisible =
   do
     printBoard aiBoard aiBoardVisible
-    putStrLn("--------------")
+    putStrLn("=============================================")
     printBoard playerBoard True
 
 
@@ -237,10 +237,10 @@ getEndCoord (p1,p2) n 4 = (p1 - (n-1), p2) -- right
 -- ai next moves function, takes difficulty, board, current next moves, last move made
 -- assuming that the choosen target from the previous move has been removed from currNextMoves
 getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
-getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove
+getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove lastMove
 getAiNextMoves 4 board currNextMoves lastMove _ = currNextMoves
 getAiNextMoves _ board currNextMoves lastMove False
-    | null currNextMoves = getRandomMove
+    | null currNextMoves = getRandomMove lastMove
     | otherwise = currNextMoves
 getAiNextMoves _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
 
@@ -276,16 +276,17 @@ getValueAtCoordinate board (row,col) = (board !! row) !! col
 -- getMoves takes an Int that represents the difficulty and a board and returns the initial list of coordinates
 -- for the ai
 getMoves :: Int -> [[Int]] -> [(Int, Int)]
-getMoves 1 board = getRandomMove
-getMoves 2 board = getRandomMove
+getMoves 1 board = getRandomMove (0,0)
+getMoves 2 board = getRandomMove (0,0)
 getMoves 3 board = getRandomShipCoord board
 getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
 -- getRandomMove returns a random coordinate between (0,0) and (9,9)
-getRandomMove :: [(Int, Int)]
-getRandomMove = let g = mkStdGen 2
- in [head [(i, j) | i <- randomRs (0, 9) g, j <- randomRs (0, 9) g]]
+getRandomMove :: (Int, Int) -> [(Int, Int)]
+getRandomMove (x,y) = let g1 = mkStdGen (x*10+y+1)
+                          g2 = mkStdGen (y*10+x+y)
+ in [head [(i, j) | i <- randomRs (0, 9) g1, j <- randomRs (0, 9) g2]]
 
 
 -- getRandomShipCoord returns a random coordinate on the board that stores a ship coordinate
@@ -316,10 +317,10 @@ toCoord [] = []
 toCoord (h1:(h2:t)) = (h1,h2):(toCoord t)
 toCoord (h:[]) = []
 
--- getAItarget returns the head of aiNextMoves (aiNextMoves shouldn't be empty)
-getAItarget :: [(Int,Int)] -> (Int,Int)
-getAItarget [] = (0,0)
-getAItarget (h:t) = h
+-- getAITarget returns the head of aiNextMoves (aiNextMoves shouldn't be empty)
+getAITarget :: [[Int]] -> [(Int,Int)] -> (Int,Int)
+getAITarget board [] = (0,0)
+getAITarget board (h:t) = if isWaterOrShip board h then h else getAITarget board t
 
 -- importBoard
 
@@ -356,13 +357,17 @@ shipHitHere _ _ = False
 updateBoard :: [[Int]] -> (Int, Int) -> IO [[Int]]
 updateBoard board target =
   do
-    if (isWaterOrShip board target)
+    if (isShip board target)
       then do
         putStrLn("It's a HIT!")
         return (updateBoardSquare board target)
       else do
         putStrLn("It's a miss...")
         return (updateBoardSquare board target)
+
+-- Returns true if the given coordinate is a ship (hasn't been targetted before)
+isShip :: [[Int]] -> (Int, Int) -> Bool
+isShip board (i,j) = ship_val == getValueAtCoordinate board (i,j)
 
 -- add 2 to the value at position (row,col)
 updateBoardSquare :: [[Int]] -> (Int,Int) -> [[Int]]
@@ -455,7 +460,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
       then do
         putStrLn("Congratulations you have won the match!!!")
     else do
-      let aiTarget = getAItarget aiNextMoves
+      let aiTarget = getAITarget playerBoard aiNextMoves
       newPlayerBoard <- updateBoard playerBoard aiTarget
       let newAiNextMoves = getAiNextMoves difficulty newPlayerBoard (removeHead aiNextMoves) aiTarget (shipHasBeenHit playerBoard newPlayerBoard)
 
@@ -551,8 +556,8 @@ main =
       let difficulty = (toInt ((parsedFile !! 0) !! 0))
       let aiBoardVisible = (((parsedFile !! 0) !! 1) == "True")
       let aiNextMoves = (toCoord (map toInt (parsedFile !! 1)))
-      let aiData = drop 2 . take 12 $ parsedFile
-      let playerData = drop 12 . take 22 $ parsedFile
+      let playerData = drop 2 . take 12 $ parsedFile
+      let aiData = drop 12 . take 22 $ parsedFile
       let aiBoard = importBoard aiData
       let playerBoard = importBoard playerData
       play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
