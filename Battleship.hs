@@ -503,11 +503,6 @@ encodeBoard :: [[Int]] -> String
 encodeBoard [] = ""
 encodeBoard (h:t) = (intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
 
-intercalate :: [a] -> [[a]] -> [a]
-intercalate s [] = []
-intercalate s [x] = x
-intercalate s (h:t) = h:s:(intercalate s t)
-
 
 importBoard :: [[String]] -> [[Int]]
 importBoard stringBoard = map importBoardHelper stringBoard
