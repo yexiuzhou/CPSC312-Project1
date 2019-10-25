@@ -366,7 +366,6 @@ shipHitHere _ _ = False
 -- the target is water or a ship (ie isWaterOrShip returns true)
 updateBoard :: [[Int]] -> (Int, Int) -> IO [[Int]]
 updateBoard board target =
-turn (updateBoardSquare board target)
   do
     if (isWaterOrShip board target)
       then do
@@ -416,7 +415,7 @@ isValidCoordinate lst = False
 
 -- Converting the letter,number representation to a coordinate of form (row, column)
 createCoordinate :: [Char] -> (Int, Int)
-createCoordinate [letter,num] = ((toInt [num]), (convertLetterToNum (T.toUpper letter)))
+createCoordinate [letter,num] = ((ch2dig num), (convertLetterToNum (T.toUpper letter)))
 
 
 -- Takes letter character of a coordinate and returns the integer mapping
