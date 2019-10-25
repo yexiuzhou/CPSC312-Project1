@@ -98,7 +98,7 @@ getDifficulty =
           return (toInt difficulty)
       else do
         putStrLn("That is not a valid Integer, please try again")
-        return getDifficulty
+        getDifficulty
 
 
 -- toInt converts a string to an integer assuming its a digit
@@ -168,13 +168,13 @@ placeShip n b =
                     return (placeShipHelper startCoord endCoord b)
                 else do
                     putStrLn("Invalid ship placement please try again.")
-                    return (placeShip n b)
+                    placeShip n b
             else do
             putStrLn("Invalid direction please try again.")
-            return (placeShip n b)
+            placeShip n b
         else do
         putStrLn("Invalid coordinate please try again.")
-        return (placeShip n b)
+        placeShip n b
 
 -- isFreeBetween checks to see if all places in between 2 coords are free for ships to be placed
 -- must be in same row or col (guarenteed because we use getEndCoord)
@@ -241,7 +241,7 @@ createBoard r c = [0 | x <-[1..c]] : createBoard (r-1) c
 
 -- ai next moves function, takes difficulty, board, current next moves, last move made, if it was a hit
 -- assuming that the choosen target from the previous move has been removed from currNextMoves
-getAiNextMoves :: Int -> [[Int]] -> (Int, Int) -> Bool -> [(Int, Int)]
+getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
 getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove
 getAiNextMoves 4 board currNextMoves lastMove _ = currNextMoves
 getAiNextMoves _ board currNextMoves lastMove False
