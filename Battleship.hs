@@ -190,10 +190,13 @@ isFreeSpace (r,c) board = (getValueAtCoordinate board (r,c)) == 0
 -- ai next moves function, takes difficulty, board, current next moves, last move made
 -- assuming that the choosen target from the previous move has been removed from currNextMoves
 getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
-getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove lastMove
+getAiNextMoves 1 board currNextMoves lastMove _ = if isWaterOrShip board move
+                                                   then [move]
+                                                   else getAiNextMoves 1 board currNextMoves move False
+                                                      where move =  head (getRandomMove lastMove)
 getAiNextMoves 4 board currNextMoves lastMove _ = currNextMoves
-getAiNextMoves _ board currNextMoves lastMove False
-    | null currNextMoves = getRandomMove lastMove
+getAiNextMoves difficulty board currNextMoves lastMove False
+    | null currNextMoves = getAiNextMoves 1 board currNextMoves lastMove False
     | otherwise = currNextMoves
 getAiNextMoves _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
 
@@ -420,7 +423,7 @@ encodeBoard [] = ""
 encodeBoard (h:t) = T.unpack ((T.intercalate (T.pack ",") (map T.pack (map show h)))) ++ "\n" ++ encodeBoard t
 
 {----------------------------------------------------------------------------------------------------------------------}
-{- Read in the board functions -----------------------------------------------------------------------------------------------------}
+{- Read in the board functions ----------------------------------------------------------------------------------------}
 {----------------------------------------------------------------------------------------------------------------------}
 importBoard :: [[String]] -> [[Int]]
 importBoard stringBoard = map importBoardHelper stringBoard
