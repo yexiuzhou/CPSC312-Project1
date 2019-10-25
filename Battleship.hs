@@ -27,7 +27,6 @@ isInt (h:t) = isDigit h && isInt t
 
 
 {------------------------------- Print Functions ------------------------------------------}
--- TODO Test the Print Functions
 -- printBoards prints the board state
 printBoards :: [[Int]] -> [[Int]] -> Bool -> IO ()
 printBoards aiBoard playerBoard aiBoardVisible =
@@ -113,7 +112,6 @@ ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
 isDigit :: Char -> Bool
 isDigit ch = ch >=  '0' &&  ch <=  '9'
 
--- TODO
 -- setUpPlayerBoard sets up the playerBoard
 setUpPlayerBoard :: IO [[Int]]
 setUpPlayerBoard = 
@@ -508,8 +506,11 @@ intercalate s [x] = x
 intercalate s (h:t) = h:s:(intercalate s t)
 
 
--- TODO: importBoard - consumes a matrix of strings, convert to a matrix of ints
 importBoard :: [[String]] -> [[Int]]
+importBoard stringBoard = map importBoardHelper stringBoard
+
+importBoardHelper :: [String] -> [Int]
+importBoardHelper row = map toInt row
 
 -- The entry point of the program
 main :: IO ()
