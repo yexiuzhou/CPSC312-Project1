@@ -472,7 +472,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
         shouldSave <- getLine
         if (shouldSave == "Y" || shouldSave == "y")
           then do
-            save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+            save newPlayerBoard newAIBoard difficulty aiBoardVisible newAiNextMoves
         else do
           play newPlayerBoard newAIBoard difficulty aiBoardVisible newAiNextMoves
 
