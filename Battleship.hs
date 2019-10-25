@@ -478,10 +478,10 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
 save :: [[Int]] -> [[Int]] -> Int -> Bool -> [(Int,Int)] -> IO()
 save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
   do
-    putStrLn("What is the name of the file you'd like to save to? (include .csv)")
+    putStrLn("What is the name of the file you'd like to save to? (Include .csv)")
     fileName <- getLine
     writeFile fileName (encodeInputs playerBoard aiBoard difficulty aiBoardVisible aiNextMoves)
-    putStrLn("The game has benn save in "++fileName++".csv")
+    putStrLn("The game has benn save in "++fileName)
     return ()
 
 -- encodeInputs encodes the input into a list of strings
