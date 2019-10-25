@@ -8,7 +8,7 @@ import System.Random
 import Text.Tabl
 
 validX = ['A' .. 'J']
-validY = [1 .. 10]
+validY = [0 .. 9]
 
 water_val = 0
 ship_val = 1
