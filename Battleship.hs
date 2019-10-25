@@ -376,7 +376,7 @@ updateBoard board target =
         return (updateBoardSquare board target)
 
 -- add 2 to the value at position (row,col)
-updateBoardSquare :: [[Int]] -> (Int,Int) -> IO [[Int]]
+updateBoardSquare :: [[Int]] -> (Int,Int) -> [[Int]]
 updateBoardSquare board (row, col) =
     [[if i == row && j == col then (getValueOfCoordinate board (i,j))+2
                               else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
