@@ -2,6 +2,7 @@ module Battleship where
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import System.Random
 
 validX = ['A' .. 'J']
 validY = [1 .. 10]
@@ -39,11 +40,14 @@ printBoards aiBoard playerBoard aiBoardVisible =
 printBoard :: [[Int]] -> Bool -> IO ()
 printBoard board isShipVisibile =
   do
-    T.putStrLn $ tabl EnvAscii DecorAll DecorAll [] formatBoard
+    T.putStrLn $ tabl EnvAscii hdecor vdecor aligns formattedboard
     where
-        formattedBoard = formatBoard board isShipVisible
+        hdecor = DecorAll
+        vdecor = DecorAll
+        aligns = []
+        formattedBoard = formatBoard board isShipVisibile
 
-headerRow = [" ":"A":"B":"C":"D":"E":"F":"G":"H":"I":"J"]
+headerRow = [" ","A","B","C","D","E","F","G","H","I","J"]
 -- formats [[Int]] into [[T.Text]] to be outputted to console
 formatBoard :: [[Int]] -> Bool -> [[T.Text]]
 formatBoard board isShipVisible = headerRow :
@@ -55,12 +59,12 @@ intToText i = toEnum i :: T.Text
 
 -- List of integers to a row of corresponding text characters
 intListToTextList :: [Int] -> Bool -> [T.Text]
-intListToTextList row isShipVisible = map (\ i -> getSymbol x isShipVisible) row
+intListToTextList row isShipVisible = map (\ x -> getBoardSymbol x isShipVisible) row
 
 -- Integer to a Symbol representing water, ship, miss, hit
 -- only show ship if isShipVisible is true, otherwise show water
-getboardsymbol :: Int -> Bool -> T.Text
-getboardsymbol i isShipVisible
+getBoardSymbol :: Int -> Bool -> T.Text
+getBoardSymbol i isShipVisible
     | i == 0    = "~" -- water
     | i == 1    = if isShipVisible then "#" else "~" -- ship
     | i == 2    = "O" -- miss
@@ -196,11 +200,11 @@ placeShipHelper startCoord endCoord currBoard
 -}
 placeShipHelper :: (Int, Int) -> (Int, Int) -> [[Int]] -> [[Int]]
 placeShipHelper (s1,s2) (e1,e2) board -- TODO
-    | s1 == t1 && s2 == t2 = [[if i == s1 && j == s2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s1 == t1 && s2 > t2 = [[if i == s1 && j <= s2 && j >= t2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s1 == t1 && s2 < t2 = [[if i == s1 && j >= s2 && j <= t2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s2 == t2 && s1 > t1 = [[if j == s2 && i <= s1 && i >= t1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
-    | s2 == t2 && s1 < t1 = [[if j == s2 && i >= s1 && i <= t1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == e1 && s2 == e2 = [[if i == s1 && j == s2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == e1 && s2 > e2 = [[if i == s1 && j <= s2 && j >= e2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s1 == e1 && s2 < e2 = [[if i == s1 && j >= s2 && j <= e2 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s2 == e2 && s1 > e1 = [[if j == s2 && i <= s1 && i >= e1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
+    | s2 == e2 && s1 < e1 = [[if j == s2 && i >= s1 && i <= e1 then 1 else getValueOfCoordinate board (i,j) | j <- [0..9]] | i <- [0..9]]
     | otherwise = board
 
 
