@@ -363,7 +363,7 @@ updateBoard board target =
     do
         if unhitShipAtSquare board target
             then do
-                putStrLn("It's a HIT!"
+                putStrLn("It's a HIT!")
                 return (updateBoardSquare board target)
             else do
                 putStrLn("It's a miss...")
@@ -527,12 +527,12 @@ main =
         putStrLn("Ok, lets start a new game.")
         putStrLn("First off lets set up your board")
         putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
-          let aiBoardVisible = True
-          playerBoard <- setUpPlayerBoard
-          difficulty <- getDifficulty
-          aiBoard <- setUpAIBoard
-          aiNextMoves <- getMoves difficulty
-          play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+        let aiBoardVisible = True
+        playerBoard <- setUpPlayerBoard
+        difficulty <- getDifficulty
+        aiBoard <- setUpAIBoard
+        aiNextMoves <- getMoves difficulty
+        play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
     else do -- load game
       putStrLn("What is your file's name?")
       fileName <- getLine
