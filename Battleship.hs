@@ -196,7 +196,15 @@ randomlyPlaceShip :: Int -> [[Int]] -> IO [[Int]] -- TODO
 randomlyPlaceShip n b =
   do
     g <- newStdGen
-    let head = ( ((randomRs (0,9) g) !! 0), ((randomRs (0,9) g) !! 1) )
+    let startCoord = ( ((randomRs (0,9) g) !! 0), ((randomRs (0,9) g) !! 1) )
+    let dir = (randomRs (1,4) g) !! 0
+    let endCoord = getEndCoord startCoord n dir
+    if (inBoard endCoord && isFreeBetween startCoord endCoord b)
+        then do
+        return (placeShipHelper startCoord endCoord b)
+        else do
+        return (placeShip n b)
+
 
 -- inBoard takes a coord and sees if its in the board
 inBoard :: (Int,Int) -> Bool
