@@ -50,7 +50,7 @@ printBoard board isShipVisibile =
         aligns = []
         formattedBoard = formatBoard board isShipVisibile
 
-headerRow = [" ","A","B","C","D","E","F","G","H","I","J"]
+headerRow = ((T.singleton ' '):[T.singleton a | a <- ['A'..'J']])
 -- formats [[Int]] into [[T.Text]] to be outputted to console
 formatBoard :: [[Int]] -> Bool -> [[T.Text]]
 formatBoard board isShipVisible = headerRow :
@@ -58,7 +58,7 @@ formatBoard board isShipVisible = headerRow :
 
 -- convert Int to T.Text
 intToText :: Int -> T.Text
-intToText i = toEnum i :: T.Text
+intToText i = T.pack (show i)
 
 -- List of integers to a row of corresponding text characters
 intListToTextList :: [Int] -> Bool -> [T.Text]
@@ -68,11 +68,11 @@ intListToTextList row isShipVisible = map (\ x -> getBoardSymbol x isShipVisible
 -- only show ship if isShipVisible is true, otherwise show water
 getBoardSymbol :: Int -> Bool -> T.Text
 getBoardSymbol i isShipVisible
-    | i == 0    = "~" -- water
-    | i == 1    = if isShipVisible then "#" else "~" -- ship
-    | i == 2    = "O" -- miss
-    | i == 3    = "X" -- hit
-    | otherwise = " "
+    | i == 0    = T.pack "~" -- water
+    | i == 1    = if isShipVisible then T.pack "#" else T.pack "~" -- ship
+    | i == 2    = T.pack "O" -- miss
+    | i == 3    = T.pack "X" -- hit
+    | otherwise = T.pack " "
 
 
 
@@ -108,11 +108,11 @@ toInt str = toIntHelper 0 str
 toIntHelper :: Int -> String -> Int
 toIntHelper n [] = n
 toIntHelper n (h:t)
-    | isDigit h = toIntHelper (n*10 + ch2dig h) t
+    | isDigit h = toIntHelper (n*10 + charToDig h) t
 
--- ch2dig converts Char to Int
-ch2dig :: Char -> Int
-ch2dig ch = fromIntegral (fromEnum ch - fromEnum '0')
+-- charToDig converts Char to Int
+charToDig :: Char -> Int
+charToDig ch = fromIntegral (fromEnum ch - fromEnum '0')
 
 -- isDigit check to see if a Char is a digit
 isDigit :: Char -> Bool
@@ -120,9 +120,9 @@ isDigit ch = ch >=  '0' &&  ch <=  '9'
 
 -- setUpPlayerBoard sets up the playerBoard
 setUpPlayerBoard :: IO [[Int]]
-setUpPlayerBoard = 
+setUpPlayerBoard =
     do
-      board <- createBoard 10 10
+      let board = replicate 10 (replicate 10 0)
       board <- placeShip 5 board
       printBoard board True
       board <- placeShip 4 board
@@ -131,14 +131,13 @@ setUpPlayerBoard =
       printBoard board True
       board <- placeShip 2 board
       printBoard board True
-      board <- placeShip 1 board
-      return board
+      placeShip 1 board
 
 -- setUpAIBoard sets up the aiBoard
 setUpAIBoard :: IO [[Int]]
 setUpAIBoard =
     do
-      board <- createBoard 10 10
+      let board = replicate 10 (replicate 10 0)
       board <- randomlyPlaceShip 5 board
       board <- randomlyPlaceShip 4 board
       board <- randomlyPlaceShip 3 board
@@ -149,8 +148,8 @@ setUpAIBoard =
 -- placeShip n b , manually places a ship of length n on board b (use placeShipHelper)
 placeShip :: Int -> [[Int]] -> IO [[Int]]
 placeShip 0 b = return b
-placeShip n b = 
-  do 
+placeShip n b =
+  do
     -- get coord and direction and see if a ship can be place, if so then place otherwise try again
     putStrLn("Please input your ship start point in the form (A,1)")
     start <- getLine
@@ -161,7 +160,7 @@ placeShip n b =
         putStrLn("[1] - up, [2] - down, [3] - left [4] - right")
         dir <- getLine
         if (isInt dir && (toInt dir) > 0 &&  (toInt dir) < 5)
-            then do 
+            then do
             let endCoord = getEndCoord startCoord n (toInt dir)
             if (isValidCoordinateNum endCoord && isFreeBetween startCoord endCoord b)
                 then do
@@ -223,7 +222,7 @@ randomlyPlaceShip n b =
         then do
         return (placeShipHelper startCoord endCoord b)
         else do
-        return (placeShip n b)
+        randomlyPlaceShip n b
 
 
 -- getEndCoord given startCoord n dir returns an end coord
@@ -234,20 +233,24 @@ getEndCoord (p1,p2) n 3 = (p1 + (n-1), p2) -- left
 getEndCoord (p1,p2) n 4 = (p1 - (n-1), p2) -- right
 
 
--- createBoard row col generates a row x col list of lists with 0 inside
-createBoard :: Int -> Int -> [[Int]]
-createBoard 0 _ = []
-createBoard r c = [0 | x <-[1..c]] : createBoard (r-1) c
-
--- ai next moves function, takes difficulty, board, current next moves, last move made, if it was a hit
+-- ai next moves function, takes difficulty, board, current next moves, last move made
 -- assuming that the choosen target from the previous move has been removed from currNextMoves
-getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
-getAiNextMoves 1 board currNextMoves lastMove _ = getRandomMove
-getAiNextMoves 4 board currNextMoves lastMove _ = currNextMoves
-getAiNextMoves _ board currNextMoves lastMove False
+getAiNextMoves :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> [(Int, Int)]
+getAiNextMoves difficulty board currNextMoves lastMove
+  = getAiNextMovesHelper difficulty board currNextMoves lastMove isTargetHit
+    where isTargetHit = isHit lastMove board
+
+isHit :: (Int, Int) -> [[Int]] -> Bool
+isHit (i,j) board = val == hit_val
+    where val = getValueAtCoordinate board (i,j)
+
+getAiNextMovesHelper :: Int -> [[Int]] -> [(Int, Int)] -> (Int, Int) -> Bool -> [(Int, Int)]
+getAiNextMovesHelper 1 board currNextMoves lastMove _ = getRandomMove
+getAiNextMovesHelper 4 board currNextMoves lastMove _ = currNextMoves
+getAiNextMovesHelper _ board currNextMoves lastMove False
     | null currNextMoves = getRandomMove
     | otherwise = currNextMoves
-getAiNextMoves _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
+getAiNextMovesHelper _ board currNextMoves lastMove True = getNextMovesHelper board lastMove
 
 -- generate neighbouring coords around the hit, return the ones that aren't hit/miss
 getNextMovesHelper :: [[Int]] -> (Int, Int) -> [(Int, Int)]
@@ -258,18 +261,18 @@ getNeighbours :: (Int, Int) -> [(Int, Int)]
 getNeighbours (x,y) = [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
 
 -- make sure neighbours are in the board and are either ships or boards
-validateNextMoves :: [(Int, Int)] -> [[Int]] -> [(Int, Int)]
-validateNextMoves neighbours board = filter p2 (filter p1 neighbours)
+validateNextMoves :: [[Int]] -> [(Int, Int)] -> [(Int, Int)]
+validateNextMoves board neighbours = filter p2 (filter p1 neighbours)
   where p1 n = isValidCoordinateNum n
-        p2 n = isWaterOrShip n board
+        p2 n = isWaterOrShip board n
 
 -- Returns true if the given coordinate in the form (row,col) is on the board (ie valid), else false.
 isValidCoordinateNum :: (Int, Int) -> Bool
 isValidCoordinateNum (row, col) = row >= 0 && row <= 9 && col >= 0 && col <= 9
 
 -- Returns true if the given coordinate is water or ship (has not been targeted yet)
-isWaterOrShip :: (Int, Int) -> [[Int]] -> Bool
-isWaterOrShip (i,j) board =
+isWaterOrShip :: [[Int]] -> (Int, Int) -> Bool
+isWaterOrShip board (i,j) =
     val /= miss_val && val /= hit_val
     where val = getValueAtCoordinate board (i,j)
 
@@ -288,21 +291,15 @@ getMoves 4 board = getAllShipCoord board
 getMoves _ board = [(0,0)]
 
 -- getRandomMove returns a random coordinate between (0,0) and (9,9)
-getRandomMove :: IO [(Int, Int)] 
-getRandomMove = 
-  do
-    g <- newStdGen
-    i <- randomRs (0, 9) g
-    j <- randomRs (0, 9) g
-    return ([(i,j)])
+getRandomMove :: [(Int, Int)]
+getRandomMove = let g = mkStdGen 2
+ in [head [(i, j) | i <- randomRs (0, 9) g, j <- randomRs (0, 9) g]]
 
 
 -- getRandomShipCoord returns a random coordinate on the board that stores a ship coordinate
 getRandomShipCoord :: [[Int]] -> [(Int, Int)]
-getRandomShipCoord board = 
-  do
-    g <- newStdGen
-    return ((getAllShipCoord board)!!(randomRs (0,  (length (getAllShipCoord board)) - 1 ) g))
+getRandomShipCoord board = let g = mkStdGen 2
+  in [(getAllShipCoord board)!! (head (randomRs (0,  (length (getAllShipCoord board)) - 1 ) g))]
 
 -- getAllShipCoord returns all the coordinates on the board that stores a ship coordinate
 getAllShipCoord :: [[Int]] -> [(Int, Int)]
@@ -339,7 +336,7 @@ allShipsHit :: [[Int]] -> Bool
 allShipsHit [] = True
 allShipsHit (h:t) =  (allShipsHitHelper h) && (allShipsHit t)
 
--- allShipsHitHelper takes a list of Ints and returns true if all the ships in the list have been hit 
+-- allShipsHitHelper takes a list of Ints and returns true if all the ships in the list have been hit
 --(ie contains no 1's)
 allShipsHitHelper :: [Int] -> Bool
 allShipsHitHelper [] = True
@@ -399,7 +396,7 @@ getTarget aiboard =
         if (isValidCoordinate target)
             then do
                 let coordinate = createCoordinate target
-                if (isWaterOrShip coordinate aiboard)
+                if (isWaterOrShip aiboard coordinate)
                     then return coordinate
                     else do
                         putStrLn("This coordinate was previously hit. Please try again")
@@ -410,12 +407,12 @@ getTarget aiboard =
 
 -- Checks if the coordinate given is a valid board coordinate.
 isValidCoordinate :: [Char] -> Bool
-isValidCoordinate [letter, num] = ((strToChar (T.unpack (T.toUpper (T.singleton letter)))) `elem` validX) && (num `elem` validY)
+isValidCoordinate [letter, num] = ((strToChar (T.unpack (T.toUpper (T.singleton letter)))) `elem` validX) && ((charToDig num) `elem` validY)
 isValidCoordinate lst = False
 
 -- Converting the letter,number representation to a coordinate of form (row, column)
 createCoordinate :: [Char] -> (Int, Int)
-createCoordinate [letter,num] = ((ch2dig num), (convertLetterToNum (strToChar (T.unpack (T.toUpper (T.singleton letter))))))
+createCoordinate [letter,num] = ((charToDig num), (convertLetterToNum (strToChar (T.unpack (T.toUpper (T.singleton letter))))))
 
 -- takes the first character in string and returns as char
 strToChar :: String -> Char
