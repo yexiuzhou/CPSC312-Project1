@@ -151,7 +151,7 @@ placeShip 0 b = return b
 placeShip n b =
   do
     -- get coord and direction and see if a ship can be place, if so then place otherwise try again
-    putStrLn("Please input your ship start point in the form (A,1)")
+    putStrLn("Please input your ship start point in the form A1")
     start <- getLine
     if (isValidCoordinate start)
         then do
@@ -382,7 +382,7 @@ getValueOfCoordinate board (row,col) = (board !! row) !! col
 getTarget :: [[Int]] -> IO (Int, Int)
 getTarget aiboard =
     do
-        putStrLn("Please input your target in the form (A,1)")
+        putStrLn("Please input your target in the form A1")
         target <- getLine
         if (isValidCoordinate target)
             then do
