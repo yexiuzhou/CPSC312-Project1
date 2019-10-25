@@ -315,7 +315,7 @@ getAllShipCoordHelper row (h:t) = getAllShipCoordHelperHelper row 0 h ++ getAllS
 
 -- inner loop
 getAllShipCoordHelperHelper :: Int -> Int -> [Int] -> [(Int, Int)]
-getAllShipCoordHelperHelper _ [] = []
+getAllShipCoordHelperHelper _ _ [] = []
 getAllShipCoordHelperHelper row col (h:t)
     | h == 1 || h == 3 = (row,col): getAllShipCoordHelperHelper row (col+1) t
     | otherwise = getAllShipCoordHelperHelper row (col+1) t
@@ -367,7 +367,7 @@ shipHitHere _ _ = False
 updateBoard :: [[Int]] -> (Int, Int) -> IO [[Int]]
 updateBoard board target =
     do
-        if unhitShipAtSquare board target
+        if unhitShipAtCoord board target
             then do
                 putStrLn("It's a HIT!")
                 return (updateBoardSquare board target)
@@ -410,12 +410,12 @@ getTarget aiboard =
 
 -- Checks if the coordinate given is a valid board coordinate.
 isValidCoordinate :: [Char] -> Bool
-isValidCoordinate [letter, num] = ((toUpper letter) `elem` validX) && (num `elem` validY)
+isValidCoordinate [letter, num] = ((T.toUpper letter) `elem` validX) && (num `elem` validY)
 isValidCoordinate lst = False
 
 -- Converting the letter,number representation to a coordinate of form (row, column)
 createCoordinate :: [Char] -> (Int, Int)
-createCoordinate [letter,num] = ((charToNum num), (convertLetterToNum (toUpper letter)))
+createCoordinate [letter,num] = ((toInt [num]), (convertLetterToNum (T.toUpper letter)))
 
 -- Takes letter character of a coordinate and returns the integer mapping
 convertLetterToNum :: Char -> Int
@@ -471,7 +471,7 @@ play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves =
           then do
             save playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
         else do
-          play newPlayerBoard newAIBoard ai aiBoardVisible newAiNextMoves difficulty
+          play newPlayerBoard newAIBoard difficulty aiBoardVisible newAiNextMoves
 
 
 -- save Saves the game a .csv file
@@ -504,7 +504,7 @@ encodeMoves ((h1,h2):t) = show h1 ++ "," ++ show h2 ++ "," ++  encodeMoves t
 
 encodeBoard :: [[Int]] -> String
 encodeBoard [] = ""
-encodeBoard (h:t) = (intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
+encodeBoard (h:t) = (T.intercalate "," (map show h)) ++ "\n" ++ encodeBoard t
 
 
 importBoard :: [[String]] -> [[Int]]
