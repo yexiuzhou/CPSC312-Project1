@@ -1,8 +1,7 @@
 module Battleship where
 
-import qualified Data.Text.IO  as T
-import           Text.Tabl
-
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 
 validX = ['A' .. 'J']
 validY = [1 .. 10]
@@ -45,22 +44,22 @@ printBoard board isShipVisibile =
         formattedBoard = formatBoard board isShipVisible
 
 headerRow = [" ":"A":"B":"C":"D":"E":"F":"G":"H":"I":"J"]
--- formats [[Int]] into [[Text]] to be outputted to console
-formatBoard :: [[Int]] -> Bool -> [[Text]]
+-- formats [[Int]] into [[T.Text]] to be outputted to console
+formatBoard :: [[Int]] -> Bool -> [[T.Text]]
 formatBoard board isShipVisible = headerRow :
                                         [(intToText i):(intListToTextList (board !! (i)) isShipVisible) | i <- [0..9]]
 
--- convert Int to Text
-intToText :: Int -> Text
-intToText i = toEnum i :: Text
+-- convert Int to T.Text
+intToText :: Int -> T.Text
+intToText i = toEnum i :: T.Text
 
 -- List of integers to a row of corresponding text characters
-intListToTextList :: [Int] -> Bool -> [Text]
-rowToSymbol row isShipVisible = map (\ i -> getSymbol x isShipVisible) row
+intListToTextList :: [Int] -> Bool -> [T.Text]
+intListToTextList row isShipVisible = map (\ i -> getSymbol x isShipVisible) row
 
 -- Integer to a Symbol representing water, ship, miss, hit
 -- only show ship if isShipVisible is true, otherwise show water
-getboardsymbol :: Int -> Bool -> Text
+getboardsymbol :: Int -> Bool -> T.Text
 getboardsymbol i isShipVisible
     | i == 0    = "~" -- water
     | i == 1    = if isShipVisible then "#" else "~" -- ship
@@ -363,7 +362,7 @@ updateBoard board target =
     do
         if unhitShipAtSquare board target
             then do
-                putStrLn("It's a HIT!"
+                putStrLn("It's a HIT!")
                 return (updateBoardSquare board target)
             else do
                 putStrLn("It's a miss...")
@@ -527,12 +526,12 @@ main =
         putStrLn("Ok, lets start a new game.")
         putStrLn("First off lets set up your board")
         putStrLn("Use the format 'A1' 'D6' etc when inputting coordinates for the ships")
-          let aiBoardVisible = True
-          playerBoard <- setUpPlayerBoard
-          difficulty <- getDifficulty
-          aiBoard <- setUpAIBoard
-          aiNextMoves <- getMoves difficulty
-          play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
+        let aiBoardVisible = True
+        playerBoard <- setUpPlayerBoard
+        difficulty <- getDifficulty
+        aiBoard <- setUpAIBoard
+        aiNextMoves <- getMoves difficulty
+        play playerBoard aiBoard difficulty aiBoardVisible aiNextMoves
     else do -- load game
       putStrLn("What is your file's name?")
       fileName <- getLine
